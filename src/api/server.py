@@ -5,6 +5,8 @@ import os
 import socketserver
 import sys
 import json
+import threading
+import time
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
@@ -92,6 +94,26 @@ def main():
     indexer = BackgroundIndexer()
     indexer.start()
     logger.info("Background indexer started")
+
+    def _daily_scrape():
+        while True:
+            time.sleep(86400)
+            try:
+                logger.info("Daily scrape: checking for new entries...")
+                domain = scraper.find_active_domain()
+                if not domain:
+                    continue
+                before = len(cache_mod.load_catalog())
+                cache_mod.download_combined_catalog(domain, enrich=False)
+                after = len(cache_mod.load_catalog())
+                added = import_catalog()
+                logger.info("Daily scrape: {before} -> {after} entries ({new} new in catalog, {db} new in DB)".format(
+                    before=before, after=after, new=after-before, db=added))
+            except Exception as exc:
+                logger.error("Daily scrape error: {e}".format(e=exc))
+
+    threading.Thread(target=_daily_scrape, daemon=True).start()
+    logger.info("Daily scraper started (every 24h)")
 
     server = socketserver.TCPServer((host, port), APIHandler)
     logger.info("=" * 60)
