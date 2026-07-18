@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+
+api_cache/
+data/
+*.db
+
+Start.sh
+
+.env
+.venv/
