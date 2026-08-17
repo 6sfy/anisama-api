@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS episodes (
     url TEXT,
     resolved_url TEXT,
     resolved_type TEXT DEFAULT '',
+    resolved_referer TEXT DEFAULT '',
     lang TEXT DEFAULT 'vostfr',
     season TEXT DEFAULT '',
     updated_at REAL DEFAULT (unixepoch()),
@@ -47,5 +48,16 @@ def get_db():
 def init_db():
     conn = get_db()
     conn.executescript(SCHEMA)
+    migrate(conn)
     conn.commit()
     conn.close()
+
+
+def migrate(conn):
+    """Apply lightweight schema migrations for pre-existing databases."""
+    try:
+        cols = [row[1] for row in conn.execute("PRAGMA table_info(episodes)").fetchall()]
+        if cols and "resolved_referer" not in cols:
+            conn.execute("ALTER TABLE episodes ADD COLUMN resolved_referer TEXT DEFAULT ''")
+    except Exception:
+        pass

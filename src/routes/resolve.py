@@ -35,6 +35,47 @@ def handle_resolve(handler, params):
         send_json(handler, {"url": url, "resolved": {"url": url, "type": "raw"}})
 
 
+def handle_resolve_episode_submit(handler, data):
+    """Write-back: store a client-resolved URL so future API calls are instant."""
+    source = (data.get("source") or "").strip()
+    slug = (data.get("slug") or "").strip()
+    url = (data.get("url") or "").strip()
+    rtype = (data.get("type") or "mp4").strip()[:20]
+    referer = (data.get("referer") or "").strip()
+
+    try:
+        num = int(data.get("num"))
+    except (TypeError, ValueError):
+        send_json(handler, {"error": "Invalid 'num'"}, 400)
+        return
+    if not source or not slug:
+        send_json(handler, {"error": "Missing source or slug"}, 400)
+        return
+    if not is_safe_external_url(url):
+        send_json(handler, {"error": "Invalid or unsafe URL"}, 400)
+        return
+    if referer and not is_safe_external_url(referer):
+        referer = ""
+
+    existing_url = ""
+    eps = get_anime_episodes(slug=slug, source=source)
+    if eps:
+        for ep in eps:
+            if ep.get("number") == num:
+                existing_url = ep.get("url", "")
+                break
+    page_url = existing_url or referer or url
+    save_episodes(slug, slug, source, [{
+        "number": num,
+        "url": page_url,
+        "resolved": url,
+        "resolved_type": rtype,
+        "resolved_referer": referer,
+    }])
+    logger.info("Resolution submitted: %s/%s EP%s (%s)", source, slug, num, rtype)
+    send_json(handler, {"status": "ok"}, 201)
+
+
 def handle_resolve_episode(handler, params):
     source = (params.get("source", [None])[0] or "").strip()
     slug = (params.get("slug", [None])[0] or "").strip()
@@ -174,7 +215,8 @@ def handle_resolve_episode(handler, params):
                 if ep.get("number") == num:
                     save_episodes(slug, slug, source,
                         [{"number": num, "url": ep.get("url", ""),
-                          "resolved": result["url"], "resolved_type": result["type"]}])
+                          "resolved": result["url"], "resolved_type": result["type"],
+                          "resolved_referer": result.get("referer", "")}])
                     break
         send_json(handler, {"source": source, "slug": slug, "episode": num,
                     "url": result["url"], "type": result["type"], "cached": False, "referer": result.get("referer", "")})

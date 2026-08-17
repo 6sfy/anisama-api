@@ -2,6 +2,7 @@
 """Anisama API server — HTTP server with JSON endpoints."""
 
 import http.server
+import json
 import logging
 import os
 import re
@@ -17,7 +18,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.routes import ROUTES, LEGACY_PREFIXES
+from src.routes import ROUTES, POST_ROUTES, LEGACY_PREFIXES
 from src.routes.legacy import handle as legacy_handle
 from src.db.connection import init_db
 from src.db.models import import_catalog, get_indexed_count
@@ -115,6 +116,45 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.end_headers()
+
+    def do_POST(self):
+        if not CONCURRENCY.acquire(blocking=False):
+            send_json(self, {"error": "Server busy, retry later"}, 503)
+            return
+        try:
+            self._handle_post()
+        finally:
+            CONCURRENCY.release()
+
+    def _handle_post(self):
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/")
+        ip = self.client_address[0]
+        if not RATE_LIMITER.check(ip, heavy=True):
+            send_json(self, {"error": "Rate limit exceeded"}, 429)
+            return
+
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0 or length > 65536:
+            send_json(self, {"error": "Invalid body size"}, 400)
+            return
+        try:
+            data = json.loads(self.rfile.read(length).decode("utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("not an object")
+        except Exception:
+            send_json(self, {"error": "Invalid JSON body"}, 400)
+            return
+
+        handler = POST_ROUTES.get(path)
+        if not handler:
+            send_json(self, {"error": "Not found"}, 404)
+            return
+        try:
+            handler(self, data)
+        except Exception as exc:
+            logger.exception("Error handling %s", self.path)
+            send_json(self, {"error": str(exc)}, 500)
 
     def log_message(self, format, *args):
         msg = format % args

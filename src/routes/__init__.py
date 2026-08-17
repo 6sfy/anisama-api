@@ -12,4 +12,8 @@ ROUTES = {
     "/player": player.handle,
 }
 
+POST_ROUTES = {
+    "/api/v2/resolve-episode": resolve.handle_resolve_episode_submit,
+}
+
 LEGACY_PREFIXES = ("/api/search", "/api/episodes", "/api/resolve", "/api/sources")
