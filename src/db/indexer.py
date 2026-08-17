@@ -76,6 +76,20 @@ class BackgroundIndexer:
                     pass
             save_episodes(title, slug, "myfluneo", eps)
 
+        elif source == "franime":
+            from anisama.scraper.franime import franime_episodes, franime_resolve
+            url = link or "franime://{s}/1/1".format(s=slug)
+            eps = franime_episodes(url)
+            for ep in eps[:5]:
+                try:
+                    r = franime_resolve(ep["url"])
+                    if r and r.get("url"):
+                        ep["resolved"] = r["url"]
+                        ep["resolved_type"] = r.get("type", "")
+                except Exception:
+                    pass
+            save_episodes(title, slug, "franime", eps)
+
         elif source in ("catalog", "anime-sama"):
             from anisama.scraper.base import find_active_domain
             from anisama.scraper.anime_sama import get_anime_seasons, get_episodes

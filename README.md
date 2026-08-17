@@ -1,11 +1,11 @@
 > [!IMPORTANT]
 > ## anisama API — Centralized anime streaming backend
 >
-> **Scrapes 6 sources, returns clean JSON. Powers the anisama CLI.**
+> **Scrapes 7 sources, returns clean JSON. Powers the anisama CLI.**
 
 ## About
 
-REST API server that scrapes Anime-Sama, Voiranime, MyFluneo, AnimesUltra, French-Anime, and AnimoFlix. Returns search results, episode lists, and resolved video URLs as JSON. Used by the [anisama CLI](https://github.com/6sfy/anisama).
+REST API server that scrapes Anime-Sama, Voiranime, MyFluneo, AnimesUltra, French-Anime, AnimoFlix, and Franime. Returns search results, episode lists, and resolved video URLs as JSON. Used by the [anisama CLI](https://github.com/6sfy/anisama).
 
 Built on the [anisama](https://github.com/6sfy/anisama) core library (v2.0.0+) for all scraping, search, and resolution logic.
 
@@ -44,6 +44,7 @@ Server starts on `http://0.0.0.0:20100`. Set `PORT` and `HOST` env vars to custo
 | AnimesUltra | Sitemap + HTML |
 | French-Anime | HTML |
 | AnimoFlix | HTML + Playwright |
+| Franime | API |
 
 ## Deployment
 

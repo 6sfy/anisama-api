@@ -29,9 +29,11 @@ def _get_alt_results(q):
         from anisama.scraper.animesultra import animesultra_search
         from anisama.scraper.frenchanime import frenchanime_search
         from anisama.scraper.animoflix import animoflix_search
+        from anisama.scraper.franime import franime_search
         out.extend(animesultra_search(q, _alt_cache.get("animesultra")))
         out.extend(frenchanime_search(q, _alt_cache.get("frenchanime")))
         out.extend(animoflix_search(q, _alt_cache.get("animoflix")))
+        out.extend(franime_search(q))
     except Exception:
         pass
     return out
@@ -77,6 +79,8 @@ def handle(handler, params):
                     existing["primary_source"] = "myfluneo"
                 elif "voiranime" in link:
                     existing["primary_source"] = "voiranime"
+                elif "franime" in link:
+                    existing["primary_source"] = "franime"
                 else:
                     existing["primary_source"] = "anime-sama"
             for s in alt_sources:
@@ -91,6 +95,8 @@ def handle(handler, params):
                 primary = "myfluneo"
             elif "voiranime" in link:
                 primary = "voiranime"
+            elif "franime" in link:
+                primary = "franime"
             else:
                 primary = "anime-sama"
             results[base_key] = {

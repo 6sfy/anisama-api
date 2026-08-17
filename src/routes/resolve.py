@@ -138,6 +138,17 @@ def handle_resolve_episode(handler, params):
                         if r and r.get("url"):
                             result = {"url": r["url"], "type": r.get("type", "embed")}
                             break
+
+        elif source == "franime":
+            from anisama.scraper.franime import franime_resolve
+            eps_list = get_anime_episodes(slug=slug, source=source)
+            if eps_list:
+                for ep in eps_list:
+                    if ep.get("number") == num:
+                        r = franime_resolve(ep.get("url"))
+                        if r and r.get("url"):
+                            result = {"url": r["url"], "type": r.get("type", "embed"), "referer": r.get("referer", "")}
+                            break
     except Exception as e:
         logger.error("Resolve error: %s", e)
 

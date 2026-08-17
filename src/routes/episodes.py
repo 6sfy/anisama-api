@@ -44,6 +44,8 @@ def handle(handler, params):
             episodes = _ep_frenchanime(url)
         elif source == "animoflix":
             episodes = _ep_animoflix(url)
+        elif source == "franime":
+            episodes = _ep_franime(url, slug)
         else:
             send_json(handler, {"error": "Unknown source: {s}".format(s=source)}, 400)
             return
@@ -124,3 +126,9 @@ def _ep_frenchanime(url):
 def _ep_animoflix(url):
     from anisama.scraper.animoflix import animoflix_episodes
     return animoflix_episodes(url)
+
+
+def _ep_franime(url, slug):
+    from anisama.scraper.franime import franime_episodes
+    base = url or "franime://{s}/1/1".format(s=slug)
+    return franime_episodes(base)
