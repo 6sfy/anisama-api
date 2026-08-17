@@ -4,6 +4,7 @@
 import http.server
 import logging
 import os
+import re
 import socketserver
 import sys
 import threading
@@ -46,6 +47,13 @@ RATE_LIMIT_HEAVY = 15  # expensive endpoints (resolve / episodes / scrape)
 RATE_LIMIT_WINDOW = 60
 HEAVY_PATHS = ("/api/v2/resolve", "/api/v2/resolve-episode", "/api/v2/episodes",
                "/api/resolve", "/api/episodes")
+
+_SENSITIVE_PARAM_RE = re.compile(r"(?i)([?&]url=)[^&\s\"]+")
+
+
+def _redact_sensitive(msg):
+    """Mask url= query values in log lines (video URLs are privacy-sensitive)."""
+    return _SENSITIVE_PARAM_RE.sub(r"\1REDACTED", msg)
 
 
 class RateLimiter:
@@ -110,6 +118,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         msg = format % args
+        msg = _redact_sensitive(msg)
         if len(msg) > 250:
             msg = msg[:250] + "..."
         logger.info("%s - %s", self.client_address[0], msg)
