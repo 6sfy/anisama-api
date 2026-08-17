@@ -15,3 +15,4 @@ api_cache/
 .env.local
 .env.*
 !.env.example
+api.rar
