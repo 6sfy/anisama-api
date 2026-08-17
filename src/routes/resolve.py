@@ -1,9 +1,13 @@
 import logging
+import time
 
 from src.helpers import send_json, is_safe_external_url
 from src.db.models import get_anime_episodes, save_episodes
 
 logger = logging.getLogger("anisama-api")
+
+RESOLVED_TTL = {"m3u8": 300, "embed": 600, "mp4": 604800, "webm": 604800, "raw": 3600}
+DEFAULT_TTL = 300
 
 
 def handle_resolve(handler, params):
@@ -71,6 +75,7 @@ def handle_resolve_episode_submit(handler, data):
         "resolved": url,
         "resolved_type": rtype,
         "resolved_referer": referer,
+        "resolved_at": time.time(),
     }])
     logger.info("Resolution submitted: %s/%s EP%s (%s)", source, slug, num, rtype)
     send_json(handler, {"status": "ok"}, 201)
@@ -80,6 +85,7 @@ def handle_resolve_episode(handler, params):
     source = (params.get("source", [None])[0] or "").strip()
     slug = (params.get("slug", [None])[0] or "").strip()
     num_str = (params.get("num", [None])[0] or "").strip()
+    fresh = (params.get("fresh", [None])[0] or "").strip() == "1"
 
     if not source or not slug or not num_str:
         send_json(handler, {"error": "Missing source, slug, or num"}, 400)
@@ -90,20 +96,26 @@ def handle_resolve_episode(handler, params):
     except ValueError:
         send_json(handler, {"error": "Invalid 'num'"}, 400)
         return
-    logger.info("Resolve episode: %s/%s EP%s", source, slug, num)
+    logger.info("Resolve episode: %s/%s EP%s%s", source, slug, num, " (fresh)" if fresh else "")
 
-    # 1. Check SQLite for already-resolved URL
-    eps = get_anime_episodes(slug=slug, source=source)
-    if eps:
-        for ep in eps:
-            if ep.get("number") == num and ep.get("resolved_url"):
-                send_json(handler, {"source": source, "slug": slug, "episode": num,
-                            "url": ep["resolved_url"], "type": ep.get("resolved_type", ""), "cached": True, "referer": ep.get("resolved_referer", "")})
-                return
+    # 1. Check SQLite for an already-resolved URL (fresh=1 bypasses the cache)
+    if not fresh:
+        eps = get_anime_episodes(slug=slug, source=source)
+        if eps:
+            for ep in eps:
+                if ep.get("number") == num and ep.get("resolved_url"):
+                    ttl = RESOLVED_TTL.get(ep.get("resolved_type", ""), DEFAULT_TTL)
+                    resolved_at = ep.get("resolved_at") or 0
+                    if time.time() - resolved_at <= ttl:
+                        send_json(handler, {"source": source, "slug": slug, "episode": num,
+                                    "url": ep["resolved_url"], "type": ep.get("resolved_type", ""), "cached": True, "referer": ep.get("resolved_referer", "")})
+                        return
+            logger.info("Cached resolution expired for %s/%s EP%s", source, slug, num)
 
     # 2. Resolve on demand
     result = None
     try:
+        eps = get_anime_episodes(slug=slug, source=source)
         if source == "anime-sama":
             from anisama.resolver import resolve_url
             from anisama.scraper.base import find_active_domain
@@ -216,7 +228,8 @@ def handle_resolve_episode(handler, params):
                     save_episodes(slug, slug, source,
                         [{"number": num, "url": ep.get("url", ""),
                           "resolved": result["url"], "resolved_type": result["type"],
-                          "resolved_referer": result.get("referer", "")}])
+                          "resolved_referer": result.get("referer", ""),
+                          "resolved_at": time.time()}])
                     break
         send_json(handler, {"source": source, "slug": slug, "episode": num,
                     "url": result["url"], "type": result["type"], "cached": False, "referer": result.get("referer", "")})

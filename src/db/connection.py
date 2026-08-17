@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS episodes (
     resolved_url TEXT,
     resolved_type TEXT DEFAULT '',
     resolved_referer TEXT DEFAULT '',
+    resolved_at REAL,
     lang TEXT DEFAULT 'vostfr',
     season TEXT DEFAULT '',
     updated_at REAL DEFAULT (unixepoch()),
@@ -59,5 +60,7 @@ def migrate(conn):
         cols = [row[1] for row in conn.execute("PRAGMA table_info(episodes)").fetchall()]
         if cols and "resolved_referer" not in cols:
             conn.execute("ALTER TABLE episodes ADD COLUMN resolved_referer TEXT DEFAULT ''")
+        if cols and "resolved_at" not in cols:
+            conn.execute("ALTER TABLE episodes ADD COLUMN resolved_at REAL")
     except Exception:
         pass

@@ -54,7 +54,7 @@ def get_anime_episodes(anime_title=None, slug=None, source=None):
 
     anime_id = row["id"]
     cur.execute(
-        "SELECT number, url, resolved_url, resolved_type, resolved_referer, lang, season FROM episodes WHERE anime_id = ? ORDER BY number",
+        "SELECT number, url, resolved_url, resolved_type, resolved_referer, resolved_at, lang, season FROM episodes WHERE anime_id = ? ORDER BY number",
         (anime_id,),
     )
     eps = [dict(e) for e in cur.fetchall()]
@@ -83,11 +83,12 @@ def save_episodes(anime_title, slug, source, episodes):
         resolved = ep.get("resolved", "")
         rtype = ep.get("resolved_type", "")
         referer = ep.get("resolved_referer", "")
+        resolved_at = ep.get("resolved_at")
         lang = ep.get("lang", "vostfr")
         season = ep.get("season", "")
         cur.execute(
-            "INSERT OR REPLACE INTO episodes (anime_id, number, url, resolved_url, resolved_type, resolved_referer, lang, season, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (anime_id, num, url, resolved, rtype, referer, lang, season, now),
+            "INSERT OR REPLACE INTO episodes (anime_id, number, url, resolved_url, resolved_type, resolved_referer, resolved_at, lang, season, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (anime_id, num, url, resolved, rtype, referer, resolved_at, lang, season, now),
         )
     conn.commit()
     conn.close()
