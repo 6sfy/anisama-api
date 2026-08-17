@@ -8,6 +8,7 @@ import socketserver
 import sys
 import threading
 import time
+from collections import deque
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
@@ -34,6 +35,58 @@ CACHE_DIR.mkdir(exist_ok=True)
 logger = logging.getLogger("anisama-api")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", stream=sys.stdout)
 
+# ── Security knobs ──
+
+# Max simultaneous in-flight requests (rest rejected with 503)
+MAX_CONCURRENCY = 20
+
+# Rate limit: requests per IP per window
+RATE_LIMIT_GLOBAL = 120
+RATE_LIMIT_HEAVY = 15  # expensive endpoints (resolve / episodes / scrape)
+RATE_LIMIT_WINDOW = 60
+HEAVY_PATHS = ("/api/v2/resolve", "/api/v2/resolve-episode", "/api/v2/episodes",
+               "/api/resolve", "/api/episodes")
+
+
+class RateLimiter:
+    """Per-IP sliding-window rate limiter (thread-safe, in-memory).
+    Each IP keeps an independent budget per request class (light/heavy),
+    so light requests never eat into the heavy quota.
+    """
+
+    def __init__(self, global_limit, heavy_limit, window):
+        self.global_limit = global_limit
+        self.heavy_limit = heavy_limit
+        self.window = window
+        self._hits = {}
+        self._lock = threading.Lock()
+
+    def check(self, ip, heavy=False):
+        now = time.time()
+        limit = self.heavy_limit if heavy else self.global_limit
+        with self._lock:
+            dq = self._hits.get(ip)
+            if dq is None:
+                dq = {True: deque(maxlen=4096), False: deque(maxlen=4096)}
+                self._hits[ip] = dq
+            bucket = dq[heavy]
+            while bucket and now - bucket[0] > self.window:
+                bucket.popleft()
+            if len(bucket) >= limit:
+                return False
+            bucket.append(now)
+            return True
+
+
+RATE_LIMITER = RateLimiter(RATE_LIMIT_GLOBAL, RATE_LIMIT_HEAVY, RATE_LIMIT_WINDOW)
+CONCURRENCY = threading.BoundedSemaphore(MAX_CONCURRENCY)
+
+
+class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+    block_on_close = True
+    allow_reuse_address = True
+
 
 class APIHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -43,6 +96,12 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Accept, Origin")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
+        self.send_header("Cache-Control", "no-store")
+        if getattr(self, "_status_code", 200) == 429:
+            self.send_header("Retry-After", str(RATE_LIMIT_WINDOW))
         super().end_headers()
 
     def do_OPTIONS(self):
@@ -50,12 +109,30 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
-        logger.info("%s - %s", self.client_address[0], format % args)
+        msg = format % args
+        if len(msg) > 250:
+            msg = msg[:250] + "..."
+        logger.info("%s - %s", self.client_address[0], msg)
 
     def do_GET(self):
+        if not CONCURRENCY.acquire(blocking=False):
+            send_json(self, {"error": "Server busy, retry later"}, 503)
+            return
+        try:
+            self._handle_get()
+        finally:
+            CONCURRENCY.release()
+
+    def _handle_get(self):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
         params = parse_qs(parsed.query)
+
+        ip = self.client_address[0]
+        heavy = any(path.startswith(p) for p in HEAVY_PATHS)
+        if not RATE_LIMITER.check(ip, heavy=heavy):
+            send_json(self, {"error": "Rate limit exceeded"}, 429)
+            return
 
         try:
             handler = ROUTES.get(path)
@@ -120,7 +197,7 @@ def main():
     threading.Thread(target=_daily_scrape, daemon=True).start()
     logger.info("Daily scraper started (every 24h)")
 
-    server = socketserver.TCPServer((host, port), APIHandler)
+    server = ThreadedHTTPServer((host, port), APIHandler)
     logger.info("=" * 60)
     logger.info("anisama Central API v2 — v2.0.0")
     logger.info("Listening on http://{h}:{p}".format(h=host, p=port))

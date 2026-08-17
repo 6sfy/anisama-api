@@ -1,4 +1,4 @@
-from src.helpers import send_json
+from src.helpers import send_json, is_safe_external_url
 from src.routes.search import do_search_internal
 from anisama.resolver import resolve_url
 
@@ -30,8 +30,10 @@ def _search(handler, params):
 
 def _resolve(handler, params):
     url = (params.get("url", [None])[0] or "").strip()
-    if url:
+    if url and is_safe_external_url(url):
         result = resolve_url(url)
         send_json(handler, result or {"url": url, "type": "raw"})
+    elif url:
+        send_json(handler, {"error": "Invalid or unsafe URL"}, 400)
     else:
         send_json(handler, {"error": "Missing url"}, 400)

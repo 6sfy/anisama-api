@@ -1,6 +1,6 @@
 import logging
 
-from src.helpers import send_json
+from src.helpers import send_json, is_safe_external_url
 from src.db.models import get_anime_episodes, save_episodes
 from anisama import cache as cache_mod
 
@@ -17,6 +17,9 @@ def handle(handler, params):
         return
     if source == "catalog":
         source = "anime-sama"
+    if url and not is_safe_external_url(url):
+        send_json(handler, {"error": "Invalid or unsafe URL"}, 400)
+        return
 
     logger.info("Episodes: source=%s slug=%s", source, slug)
 

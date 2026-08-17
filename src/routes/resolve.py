@@ -1,6 +1,6 @@
 import logging
 
-from src.helpers import send_json
+from src.helpers import send_json, is_safe_external_url
 from src.db.models import get_anime_episodes, save_episodes
 
 logger = logging.getLogger("anisama-api")
@@ -12,6 +12,9 @@ def handle_resolve(handler, params):
 
     if not url:
         send_json(handler, {"error": "Missing 'url'"}, 400)
+        return
+    if not is_safe_external_url(url):
+        send_json(handler, {"error": "Invalid or unsafe URL"}, 400)
         return
 
     logger.info("Resolve: %s (%s)", url[:80], source)
@@ -41,7 +44,11 @@ def handle_resolve_episode(handler, params):
         send_json(handler, {"error": "Missing source, slug, or num"}, 400)
         return
 
-    num = int(num_str)
+    try:
+        num = int(num_str)
+    except ValueError:
+        send_json(handler, {"error": "Invalid 'num'"}, 400)
+        return
     logger.info("Resolve episode: %s/%s EP%s", source, slug, num)
 
     # 1. Check SQLite for already-resolved URL
@@ -62,7 +69,7 @@ def handle_resolve_episode(handler, params):
             from anisama.scraper.anime_sama import get_anime_seasons, get_episodes
             if eps:
                 for ep in eps:
-                    if ep.get("number") == num and ep.get("url"):
+                    if ep.get("number") == num and ep.get("url") and is_safe_external_url(ep["url"]):
                         ep_url = ep["url"]
                         r = resolve_url(ep_url)
                         if r and r.get("url"):
@@ -82,6 +89,8 @@ def handle_resolve_episode(handler, params):
                                 mirrors = e.get("mirrors", {})
                                 for k in sorted(mirrors.keys(), key=lambda x: int(x[3:])):
                                     u = mirrors[k]
+                                    if not is_safe_external_url(u):
+                                        continue
                                     r = resolve_url(u)
                                     if r and r.get("url") and r.get("type") != "raw":
                                         result = {"url": r["url"], "type": r["type"], "referer": u}
@@ -97,7 +106,10 @@ def handle_resolve_episode(handler, params):
             if eps_list:
                 for ep in eps_list:
                     if ep.get("number") == num:
-                        r = myfluneo_resolve(ep.get("url", f"https://myfluneo.eu/anime/{slug}/saison-1/episode-{num}"))
+                        ep_url = ep.get("url") or f"https://myfluneo.eu/anime/{slug}/saison-1/episode-{num}"
+                        if not is_safe_external_url(ep_url):
+                            continue
+                        r = myfluneo_resolve(ep_url)
                         if r and r.get("url"):
                             result = {"url": r["url"], "type": r.get("type", "mp4")}
                             break
@@ -111,8 +123,8 @@ def handle_resolve_episode(handler, params):
             eps_list = get_anime_episodes(slug=slug, source=source)
             if eps_list:
                 for ep in eps_list:
-                    if ep.get("number") == num:
-                        r = animesultra_resolve(ep.get("url"))
+                    if ep.get("number") == num and is_safe_external_url(ep.get("url", "")):
+                        r = animesultra_resolve(ep["url"])
                         if r and r.get("url"):
                             result = {"url": r["url"], "type": r.get("type", "embed")}
                             break
@@ -122,8 +134,8 @@ def handle_resolve_episode(handler, params):
             eps_list = get_anime_episodes(slug=slug, source=source)
             if eps_list:
                 for ep in eps_list:
-                    if ep.get("number") == num:
-                        r = frenchanime_resolve(ep.get("url"))
+                    if ep.get("number") == num and is_safe_external_url(ep.get("url", "")):
+                        r = frenchanime_resolve(ep["url"])
                         if r and r.get("url"):
                             result = {"url": r["url"], "type": r.get("type", "embed")}
                             break
@@ -133,8 +145,8 @@ def handle_resolve_episode(handler, params):
             eps_list = get_anime_episodes(slug=slug, source=source)
             if eps_list:
                 for ep in eps_list:
-                    if ep.get("number") == num:
-                        r = animoflix_resolve(ep.get("url"))
+                    if ep.get("number") == num and is_safe_external_url(ep.get("url", "")):
+                        r = animoflix_resolve(ep["url"])
                         if r and r.get("url"):
                             result = {"url": r["url"], "type": r.get("type", "embed")}
                             break
@@ -145,7 +157,10 @@ def handle_resolve_episode(handler, params):
             if eps_list:
                 for ep in eps_list:
                     if ep.get("number") == num:
-                        r = franime_resolve(ep.get("url"))
+                        ep_url = ep.get("url", "")
+                        if not (ep_url.startswith("franime://") or is_safe_external_url(ep_url)):
+                            continue
+                        r = franime_resolve(ep_url)
                         if r and r.get("url"):
                             result = {"url": r["url"], "type": r.get("type", "embed"), "referer": r.get("referer", "")}
                             break
