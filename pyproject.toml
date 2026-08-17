@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "anisama-api"
+version = "2.0.0"
+description = "REST API server for Anisama — multi-source anime search and streaming"
+authors = [
+    {name = "6sfy"}
+]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+keywords = ["anime", "anime-sama", "api", "streaming", "server"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "anisama>=2.0.0",
+]
+
+[project.optional-dependencies]
+playwright = ["playwright>=1.40.0"]
+all = ["anisama-api[playwright]"]
+
+[project.urls]
+Repository = "https://github.com/6sfy/anisama-api"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>anisama — Documentation & API Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<button class="mobile-toggle" id="menuBtn" onclick="toggleSidebar()">☰</button>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">A</div>
+    <div class="sidebar-brand">anisama<span data-i18n="sidebar.docs_api">Docs & API</span></div>
+  </div>
+  <div class="sidebar-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="sInput" placeholder="Search..." data-i18n-placeholder="sidebar.search_placeholder" oninput="filterNav(this.value)">
+  </div>
+  <nav class="sidebar-nav" id="nav">
+    <div class="nav-group">
+      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.getting_started">Getting Started<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <ul class="nav-group-items">
+        <li><a class="nav-group-item active" href="#" onclick="return showPage('intro',this)" data-i18n="nav.introduction">Introduction</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('quick',this)" data-i18n="nav.quick_start">Quick Start</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('install',this)" data-i18n="nav.installation">Installation</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.architecture">Architecture<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <ul class="nav-group-items">
+        <li><a class="nav-group-item" href="#" onclick="return showPage('arch',this)" data-i18n="nav.project_structure">Project Structure</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('api-ref',this)" data-i18n="nav.api_reference">API Reference</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.sources">Sources<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <ul class="nav-group-items">
+        <li><a class="nav-group-item" href="#" onclick="return showPage('sources',this)" data-i18n="nav.all_sources">All 6 Sources</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('animesama',this)">Anime-Sama</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('myfluneo',this)">MyFluneo <span class="badge new">NEW</span></a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('voiranime',this)">Voiranime</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('animesultra',this)">AnimesUltra</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('frenchanime',this)">French-Anime</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('animoflix',this)">AnimoFlix</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.cli">CLI<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <ul class="nav-group-items">
+        <li><a class="nav-group-item" href="#" onclick="return showPage('cli',this)" data-i18n="nav.commands">Commands</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('config',this)" data-i18n="nav.settings">Settings</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.live_demo">Live Demo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <ul class="nav-group-items">
+        <li><a class="nav-group-item" href="#" onclick="return showPage('terminal',this)" data-i18n="nav.web_terminal">Web Terminal <span class="badge new">LIVE</span></a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('cmds',this)" data-i18n="nav.terminal_cmds">Terminal Commands</a></li>
+      </ul>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.support">Support<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <ul class="nav-group-items">
+        <li><a class="nav-group-item" href="#" onclick="return showPage('trouble',this)" data-i18n="nav.troubleshooting">Troubleshooting</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('changelog',this)" data-i18n="nav.changelog">Changelog</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span id="themeLabel" data-i18n="theme.dark">Dark Mode</span>
+    </button>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="langLabel">EN</span>
+    </button>
+    <span class="sidebar-ver">v1.1.0</span>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="content">
+
+    <!-- PAGE: Intro -->
+    <div id="p-intro" class="page active">
+      <div class="hero">
+        <div class="hero-label"><span class="dot"></span>anisama v1.1.0</div>
+        <h1 data-i18n="hero.intro.title">anisama</h1>
+        <p data-i18n="hero.intro.desc">CLI Anime VOSTFR/VF. Search, stream and download your anime from <strong style="color:var(--color-accent)">6 French sources</strong> — from your terminal, or via the <strong style="color:var(--color-accent)">central API</strong>.</p>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="icon">🌐</div><h3 data-i18n="card.6_sources">6 French Sources</h3><p data-i18n="card.6_sources.desc">Anime-Sama, MyFluneo, Voiranime, AnimesUltra, French-Anime & AnimoFlix.</p></div>
+        <div class="card"><div class="icon">🎯</div><h3 data-i18n="card.smart_search">Smart Search</h3><p data-i18n="card.smart_search.desc">Realistic fuzzy matching (rapidfuzz), title dedup, 6 cascading sources.</p></div>
+        <div class="card"><div class="icon">⚡</div><h3 data-i18n="card.api">Centralized API</h3><p data-i18n="card.api.desc">Server-side scraping + resolution. The client only consumes clean JSON.</p></div>
+        <div class="card"><div class="icon">▶️</div><h3 data-i18n="card.stream">Stream & Download</h3><p data-i18n="card.stream.desc">mpv, VLC, IINA, MoonPlayer, ImPlay or direct download.</p></div>
+        <div class="card"><div class="icon">📋</div><h3 data-i18n="card.history">History & Continue</h3><p data-i18n="card.history.desc">Resume watching at the exact episode, cross-source.</p></div>
+        <div class="card"><div class="icon">ℹ️</div><h3 data-i18n="card.anilist">AniList Info</h3><p data-i18n="card.anilist.desc">Scores, studios, synopsis, tags directly in the TUI.</p></div>
+      </div>
+    </div>
+
+    <!-- PAGE: Quick Start -->
+    <div id="p-quick" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Getting Started</div><h1 data-i18n="hero.quick.title">Quick Start</h1><p data-i18n="hero.quick.desc">Install and get running in 30 seconds.</p></div>
+      <div class="code-block">
+        <div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div>
+        <div class="code-body">
+<span class="c-comment" data-i18n="quick.code.comment1"># Install with pip</span>
+<span class="c-cmd">$</span> pip install anisama
+
+<span class="c-comment" data-i18n="quick.code.comment2"># Launch interactive TUI</span>
+<span class="c-cmd">$</span> anisama
+
+<span class="c-comment" data-i18n="quick.code.comment3"># Or search directly</span>
+<span class="c-cmd">$</span> anisama "one piece" -e 1-5
+        </div>
+      </div>
+      <p data-i18n="quick.tui">The interactive TUI launches automatically. <kbd>↑</kbd><kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to confirm, <kbd>Esc</kbd> to go back.</p>
+    </div>
+
+    <!-- PAGE: Install -->
+    <div id="p-install" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Getting Started</div><h1 data-i18n="hero.install.title">Installation</h1><p data-i18n="hero.install.desc">PyPI or source — your choice.</p></div>
+      <h2 data-i18n="install.pypi">From PyPI</h2>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body"><span class="c-cmd">$</span> pip install anisama</div></div>
+      <h2 data-i18n="install.source">From Source</h2>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
+<span class="c-cmd">$</span> git clone https://github.com/6sfy/anisama.git
+<span class="c-cmd">$</span> cd anisama
+<span class="c-cmd">$</span> pip install -e .
+<span class="c-cmd">$</span> anisama
+      </div></div>
+      <p data-i18n="install.windows"><strong>Windows:</strong> use <code>python -m src</code> from the project root, or install with <code>pip install -e .</code></p>
+      <h2 data-i18n="install.api_server">API Server (optional)</h2>
+      <p data-i18n="install.api_server.desc">If you want to host your own central API:</p>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
+<span class="c-cmd">$</span> cd api
+<span class="c-cmd">$</span> python run.py
+<span class="c-comment" data-i18n="install.api.comment"># Server starts on http://0.0.0.0:20100</span>
+      </div></div>
+    </div>
+
+    <!-- PAGE: Architecture -->
+    <div id="p-arch" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Architecture</div><h1 data-i18n="hero.arch.title">Project Structure</h1><p data-i18n="hero.arch.desc">Modular codebase: CLI client + API server.</p></div>
+
+      <h2 data-i18n="arch.api_server">API Server</h2>
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="a-title" data-i18n="arch.core">📦 Core</div>
+          <div class="a-files" data-i18n="arch.core.desc">src/core/<br> <span>cache.py</span> — catalogue & merge<br> <span>scraper.py</span> — Anime-Sama / Voiranime / 3 alt sources<br> <span>scraper_myfluneo.py</span> — MyFluneo (Playwright)<br> <span>resolver.py</span> — video URL extraction<br> <span>search.py</span> — fuzzy search</div>
+        </div>
+        <div class="arch-card">
+          <div class="a-title" data-i18n="arch.api_layer">🌐 API Layer</div>
+          <div class="a-files" data-i18n="arch.api_layer.desc">src/api/<br> <span>server.py</span> — HTTP handler<br> <span>routes/</span> — search, episodes, resolve, catalog, stats, info, player<br> <span>db/</span> — SQLite + background indexer<br> <span>utils/</span> — http helpers, text utils</div>
+        </div>
+        <div class="arch-card">
+          <div class="a-title" data-i18n="arch.web_docs">🎨 Web Docs</div>
+          <div class="a-files" data-i18n="arch.web_docs.desc">src/web/<br> <span>index.html</span><br> <span>styles.css</span><br> <span>script.js</span></div>
+        </div>
+      </div>
+
+      <h2 data-i18n="arch.cli_client">CLI Client</h2>
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="a-title" data-i18n="arch.interface">🖥️ Interface</div>
+          <div class="a-files" data-i18n="arch.interface.desc">src/<br> <span>main.py</span> — TUI, menus, flows<br> <span>player.py</span> — mpv/vlc/iina detection<br> <span>api_client.py</span> — API consumer</div>
+        </div>
+        <div class="arch-card">
+          <div class="a-title" data-i18n="arch.config">🔧 Config</div>
+          <div class="a-files" data-i18n="arch.config.desc">data/<br> <span>catalog.json</span><br> <span>settings.json</span><br> <span>history.json</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: API Reference -->
+    <div id="p-api-ref" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>API v2</div><h1 data-i18n="hero.api.title">API Reference</h1><p data-i18n="hero.api.desc">All JSON endpoints from the central API.</p></div>
+
+      <h2 data-i18n="api.base_url">Base URL</h2>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">url</span></div><div class="code-body">https://anisama.sexcaller.lol</div></div>
+
+      <h2 data-i18n="api.endpoints">Endpoints</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="api.method">Method</th><th data-i18n="api.endpoint">Endpoint</th><th data-i18n="api.description">Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>GET</code></td><td><code>/api/v2/search?q=QUERY</code></td><td>Search across all 6 sources. Returns deduped results with real fuzzy scores (0-100).</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/catalog?source=all&page=1&limit=50&q=TEXT</code></td><td>Browse the full catalog with filters, pagination and text search.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/stats</code></td><td>Global stats: counts by source, top genres, year range.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/episodes?source=SRC&slug=SLUG</code></td><td>Get episode list for an anime. Supports: anime-sama, myfluneo, voiranime, animesultra, frenchanime, animoflix.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/resolve?url=URL&source=SRC</code></td><td>Resolve any embed URL to a direct video URL.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/resolve-episode?source=SRC&slug=SLUG&num=NUM</code></td><td>Resolve a specific episode number. Uses absolute episode numbering for multi-season anime.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/sources</code></td><td>List all available sources with entry counts.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/info?title=TITLE</code></td><td>AniList info for an anime (score, studios, synopsis).</td></tr>
+            <tr><td><code>GET</code></td><td><code>/player?url=URL&title=TITLE</code></td><td>HTML player page with iframe.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 data-i18n="api.example_search">Example: Search</h2>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
+<span class="c-cmd">$</span> curl "https://anisama.sexcaller.lol/api/v2/search?q=naruto"
+<span class="c-comment" data-i18n="api.example_search.comment"># Returns deduped results with realistic scores</span>
+      </div></div>
+
+      <h2 data-i18n="api.example_catalog">Example: Catalog</h2>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
+<span class="c-cmd">$</span> curl "https://anisama.sexcaller.lol/api/v2/catalog?source=myfluneo&limit=100"
+<span class="c-cmd">$</span> curl "https://anisama.sexcaller.lol/api/v2/catalog?q=attack+on+titan"
+      </div></div>
+    </div>
+
+    <!-- PAGE: All Sources -->
+    <div id="p-sources" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1 data-i18n="hero.sources.title">6 French Sources</h1><p data-i18n="hero.sources.desc">All platforms integrated into the API and CLI.</p></div>
+      <div class="src-grid">
+        <div class="src-card"><div class="s-name">Anime-Sama</div><div class="s-desc" data-i18n="sources.animesama.desc">Main source. ~1500 entries. Embed players: vidmoly, sendvid, sibnet, smoothpre, streamwish, oneupload.</div><span class="s-tag" data-i18n="sources.animesama.tag">Main</span></div>
+        <div class="src-card"><div class="s-name">MyFluneo</div><div class="s-desc" data-i18n="sources.myfluneo.desc">~5400 entries. Next.js SPA. Playwright scraping. Hosts: vidmoly, streamtape.</div><span class="s-tag" data-i18n="sources.myfluneo.tag">NEW</span></div>
+        <div class="src-card"><div class="s-name">Voiranime</div><div class="s-desc" data-i18n="sources.voiranime.desc">~960 entries. Internal video resolution.</div><span class="s-tag" data-i18n="sources.voiranime.tag">Secondary</span></div>
+        <div class="src-card"><div class="s-name">AnimesUltra</div><div class="s-desc" data-i18n="sources.animesultra.desc">~2600 entries via sitemap XML. Hosts: vidmoly, sendvid, sibnet, vidstream.</div><span class="s-tag" data-i18n="sources.animesultra.tag">NEW</span></div>
+        <div class="src-card"><div class="s-name">French-Anime</div><div class="s-desc" data-i18n="sources.frenchanime.desc">Hosts: luluvdo, vidmoly, vidara. Scraped via homepage.</div><span class="s-tag" data-i18n="sources.frenchanime.tag">NEW</span></div>
+        <div class="src-card"><div class="s-name">AnimoFlix</div><div class="s-desc" data-i18n="sources.animoflix.desc">Hosts: sendvid, sibnet. Playwright fallback for JS-rendered episodes.</div><span class="s-tag" data-i18n="sources.animoflix.tag">NEW</span></div>
+      </div>
+    </div>
+
+    <!-- PAGE: Anime-Sama -->
+    <div id="p-animesama" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>Anime-Sama</h1><p data-i18n="hero.animesama.desc">Main source VOSTFR/VF.</p></div>
+      <p data-i18n="animesama.p1">Anime-Sama is the main source with <strong>~1500 entries</strong>. The site uses external embed players:</p>
+      <ul>
+        <li data-i18n="animesama.li1"><strong>vidmoly</strong> — video embed player</li>
+        <li data-i18n="animesama.li2"><strong>sendvid</strong> — direct MP4 player</li>
+        <li data-i18n="animesama.li3"><strong>sibnet</strong> — russian video host</li>
+        <li data-i18n="animesama.li4"><strong>smoothpre</strong> — embed player</li>
+        <li data-i18n="animesama.li5"><strong>streamwish</strong> — video host</li>
+        <li data-i18n="animesama.li6"><strong>oneupload</strong> — video upload</li>
+      </ul>
+      <p data-i18n="animesama.p2">The multiple mirror system enables automatic fallback. Speed-testing picks the fastest mirror. <code>Scan</code> / <code>Manhwa</code> / <code>Webtoon</code> seasons are automatically filtered.</p>
+    </div>
+
+    <!-- PAGE: Voiranime -->
+    <div id="p-voiranime" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>Voiranime</h1><p data-i18n="hero.voiranime.desc">Secondary source VOSTFR/VF.</p></div>
+      <p data-i18n="voiranime.p1">Voiranime provides an alternative catalog with its own internal video resolution system. <strong>~960 entries</strong> merged into the main catalog via <code>alt_source</code>.</p>
+    </div>
+
+    <!-- PAGE: MyFluneo -->
+    <div id="p-myfluneo" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>MyFluneo <span style="background:rgba(34,197,94,.12);color:#22c55e;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em">NEW</span></h1><p data-i18n="hero.myfluneo.desc">~5400 French entries.</p></div>
+      <p data-i18n="myfluneo.p1">MyFluneo (myfluneo.eu) is a <strong>new French source</strong> with <strong>~5400 entries</strong> VOSTFR/VF. The site is built with Next.js:</p>
+      <ul>
+        <li data-i18n="myfluneo.li1"><strong>vidmoly.biz</strong> — MP4 embed player</li>
+        <li data-i18n="myfluneo.li2"><strong>streamtape.com</strong> — embed player</li>
+      </ul>
+      <p data-i18n="myfluneo.p2">Server-side scraped with <strong>Playwright</strong> (Next.js RSC). Episodes and resolutions are pre-cacheable.</p>
+    </div>
+
+    <!-- PAGE: AnimesUltra -->
+    <div id="p-animesultra" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>AnimesUltra</h1><p data-i18n="hero.animesultra.desc">~2600 entries via XML sitemap.</p></div>
+      <p data-i18n="animesultra.p1">AnimesUltra (ww.animesultra.org) uses a <strong>sitemap.xml</strong> to expose its full catalog (~2600 URLs).</p>
+      <ul>
+        <li data-i18n="animesultra.li1"><strong>vidmoly</strong>, <strong>sendvid</strong>, <strong>sibnet</strong>, <strong>vidstream.pro</strong></li>
+      </ul>
+      <p data-i18n="animesultra.p2">Resolution uses the <code>data-embed</code> attribute on server buttons. No dynamic JS required for the catalog.</p>
+    </div>
+
+    <!-- PAGE: French-Anime -->
+    <div id="p-frenchanime" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>French-Anime</h1><p data-i18n="hero.frenchanime.desc">Homepage scraping.</p></div>
+      <p data-i18n="frenchanime.p1">French-Anime (french-anime.com) lists recent animes on its homepage.</p>
+      <ul>
+        <li data-i18n="frenchanime.li1"><strong>luluvdo.com</strong> — main host</li>
+        <li data-i18n="frenchanime.li2"><strong>vidmoly.biz</strong>, <strong>vidara.to</strong></li>
+      </ul>
+      <p data-i18n="frenchanime.p2">Resolution goes through iframe extraction from the episode page.</p>
+    </div>
+
+    <!-- PAGE: AnimoFlix -->
+    <div id="p-animoflix" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>AnimoFlix</h1><p data-i18n="hero.animoflix.desc">JS-heavy site with Playwright fallback.</p></div>
+      <p data-i18n="animoflix.p1">AnimoFlix (animoflix.to) is a modern site with JavaScript rendering:</p>
+      <ul>
+        <li data-i18n="animoflix.li1"><strong>sendvid</strong>, <strong>sibnet.ru</strong></li>
+      </ul>
+      <p data-i18n="animoflix.p2">The catalog is statically scraped via <code>/catalogue/</code>. Episodes use a <strong>Playwright fallback</strong> if static HTML is not enough. Server tabs are simulated via automated clicks.</p>
+    </div>
+
+    <!-- PAGE: CLI -->
+    <div id="p-cli" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>CLI</div><h1 data-i18n="hero.cli.title">Commands</h1><p data-i18n="hero.cli.desc">All available flags.</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="cli.flag">Flag</th><th data-i18n="cli.desc">Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>--lang vostfr/vf</code></td><td data-i18n="cli.lang">Language filter</td></tr>
+            <tr><td><code>--dub</code></td><td data-i18n="cli.dub">Shortcut for VF</td></tr>
+            <tr><td><code>-d, --download</code></td><td data-i18n="cli.download">Download instead of stream</td></tr>
+            <tr><td><code>-e, --episodes</code></td><td data-i18n="cli.episodes">Range: <code>5</code>, <code>1-5</code>, <code>1,3,5</code></td></tr>
+            <tr><td><code>-p, --player</code></td><td data-i18n="cli.player">mpv, vlc, iina, moonplayer, implay</td></tr>
+            <tr><td><code>-U, --update</code></td><td data-i18n="cli.update">Force catalog refresh</td></tr>
+            <tr><td><code>--settings</code></td><td data-i18n="cli.settings">Settings menu</td></tr>
+            <tr><td><code>-q, --quiet</code></td><td data-i18n="cli.quiet">Reduce output verbosity</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
+<span class="c-comment" data-i18n="cli.code.comment"># Examples</span>
+<span class="c-cmd">$</span> anisama "demon slayer"
+<span class="c-cmd">$</span> anisama "one piece" -e 1-5
+<span class="c-cmd">$</span> anisama "attack on titan" -e 1,3,5 --lang vf
+<span class="c-cmd">$</span> anisama -p vlc "berserk"
+      </div></div>
+    </div>
+
+    <!-- PAGE: Config -->
+    <div id="p-config" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>CLI</div><h1 data-i18n="hero.config.title">Settings</h1><p data-i18n="hero.config.desc">Configurable options.</p></div>
+      <p data-i18n="config.p1">Edit <code>data/settings.json</code> or the TUI Settings menu.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="config.setting">Setting</th><th data-i18n="config.default">Default</th><th data-i18n="config.description">Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>lang</code></td><td>None</td><td data-i18n="config.lang">Default language (vostfr/vf)</td></tr>
+            <tr><td><code>player</code></td><td>Auto</td><td data-i18n="config.player">Default video player</td></tr>
+            <tr><td><code>prefer_mp4</code></td><td>True</td><td data-i18n="config.prefer_mp4">Prefer MP4 over HLS</td></tr>
+            <tr><td><code>auto_next</code></td><td>False</td><td data-i18n="config.auto_next">Auto-play next episode</td></tr>
+            <tr><td><code>download_dir</code></td><td>downloads</td><td data-i18n="config.download_dir">Download folder</td></tr>
+            <tr><td><code>cache_hours</code></td><td>24</td><td data-i18n="config.cache_hours">Catalog cache lifetime</td></tr>
+            <tr><td><code>proxy</code></td><td>""</td><td data-i18n="config.proxy">HTTP Proxy (e.g. http://127.0.0.1:8080)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAGE: Terminal -->
+    <div id="p-terminal" class="page">
+      <div class="hero">
+        <div class="hero-label"><span class="dot live"></span>Live Demo <span style="background:rgba(34,197,94,.12);color:#22c55e;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em">LIVE</span></div>
+        <h1 data-i18n="hero.terminal.title">Web Terminal</h1>
+        <p data-i18n="hero.terminal.desc">Search and explore animes live. Real API calls across all 6 sources.</p>
+      </div>
+      <div class="term">
+        <div class="term-bar">
+          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+          <span class="term-title">anisama@web ~ %</span>
+        </div>
+        <div class="term-body" id="termOut">
+          <div class="l t-muted" data-i18n="term.welcome1">anisama Web Terminal — <span class="t-accent">help</span> for commands.</div>
+          <div class="l t-muted" data-i18n="term.welcome2">Sources: Anime-Sama · MyFluneo · Voiranime · AnimesUltra · French-Anime · AnimoFlix</div>
+        </div>
+        <div class="term-in">
+          <span class="prompt">anisama@web:~$</span>
+          <input type="text" id="termIn" autofocus spellcheck="false" autocomplete="off" placeholder="help">
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: Terminal Commands -->
+    <div id="p-cmds" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Live Demo</div><h1 data-i18n="hero.cmds.title">Terminal Commands</h1></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="cmds.command">Command</th><th data-i18n="cmds.description">Description</th><th data-i18n="cmds.example">Example</th></tr></thead>
+          <tbody>
+            <tr><td><code>help</code></td><td data-i18n="cmds.help">Show help</td><td>help</td></tr>
+            <tr><td><code>search &lt;query&gt;</code></td><td data-i18n="cmds.search">Search across 6 sources</td><td>search naruto</td></tr>
+            <tr><td><code>[num]</code></td><td data-i18n="cmds.num">Show episodes of a result</td><td>0</td></tr>
+            <tr><td><code>play &lt;ep&gt;</code></td><td data-i18n="cmds.play">Resolve video URL + open player</td><td>play 1</td></tr>
+            <tr><td><code>sources</code></td><td data-i18n="cmds.sources">List the 6 sources</td><td>sources</td></tr>
+            <tr><td><code>stats</code></td><td data-i18n="cmds.stats">Catalog stats</td><td>stats</td></tr>
+            <tr><td><code>clear</code></td><td data-i18n="cmds.clear">Clear the terminal</td><td>clear</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAGE: Troubleshooting -->
+    <div id="p-trouble" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Support</div><h1 data-i18n="hero.trouble.title">Troubleshooting</h1></div>
+      <div class="ts-item"><h3 data-i18n="trouble.no_results">No results</h3><p data-i18n="trouble.no_results.desc">Search uses fuzzy matching (rapidfuzz). Try shorter terms. The search cascades through 6 sources.</p></div>
+      <div class="ts-item"><h3 data-i18n="trouble.player">Player won't launch</h3><p data-i18n="trouble.player.desc">Install mpv or VLC. Use <code>anisama -p vlc "title"</code> to specify the player.</p></div>
+      <div class="ts-item"><h3 data-i18n="trouble.windows">Windows import error</h3><p data-i18n="trouble.windows.desc">Run <code>python -m src</code> from the root, or <code>pip install -e .</code> then <code>anisama</code>.</p></div>
+      <div class="ts-item"><h3 data-i18n="trouble.domain">Blocked domain</h3><p data-i18n="trouble.domain.desc">Run <code>anisama -U</code> to force a refresh. Auto-detection of active domains.</p></div>
+      <div class="ts-item"><h3 data-i18n="trouble.resolve">API returns "Could not resolve"</h3><p data-i18n="trouble.resolve.desc">Some sources use Playwright (MyFluneo, AnimoFlix). Make sure Chromium is installed on the API server.</p></div>
+    </div>
+
+    <!-- PAGE: Changelog -->
+    <div id="p-changelog" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Updates</div><h1 data-i18n="hero.changelog.title">Changelog</h1></div>
+
+      <div class="cl-entry">
+        <div class="cl-head"><span class="cl-ver">v1.1.0</span><span class="cl-latest" data-i18n="changelog.v110.latest">Latest</span><span class="cl-date">2026-07-18</span></div>
+        <div class="cl-body">
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v110.new1"><strong>4 new sources</strong> : MyFluneo (~5400 entries), AnimesUltra (~2600), French-Anime, AnimoFlix. Total : <strong>6 sources</strong>.</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v110.new2"><strong>Central API v2</strong> — modular Python server with server-side scraping. The client only consumes clean JSON.</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v110.new3">API Routes : <code>/api/v2/catalog</code> (pagination + filters), <code>/api/v2/stats</code> (global stats), <code>/api/v2/resolve-episode</code> (absolute episode resolution).</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v110.fx1"><strong>Realistic search scores</strong> — replaces artificial scores (90% for any substring) with rapidfuzz <code>partial_ratio</code> + <code>token_set_ratio</code> with penalty for extra words. No more false positives.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v110.fx2"><strong>Absolute episode numbers</strong> — multi-season episodes (e.g. Naruto Shippuden EP500) are now correctly resolved by accumulating episode counts per season.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v110.fx3"><strong>Interactive menu</strong> — a saved player in settings no longer blocks the main menu launch.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v110.fx4"><strong>Truncated descriptions</strong> — AniList/Jikan synopses now end with <code>...</code> instead of being cut off abruptly.</span></div>
+          <div class="cl-item"><span class="cl-tag up">UP</span><span class="cl-text" data-i18n="changelog.v110.up1">Cross-source catalog merge with deduplication by normalized title (<code>alt_source</code>).</span></div>
+        </div>
+      </div>
+
+      <div class="cl-entry">
+        <div class="cl-head"><span class="cl-ver" style="color:var(--color-text-secondary)">v1.0.3</span><span class="cl-date" data-i18n="changelog.v103.date">Original</span></div>
+        <div class="cl-body">
+          <div class="cl-item"><span class="cl-text" data-i18n="changelog.v103.text">Original release by <a href="https://github.com/6sfy" style="color:var(--color-accent)">6sfy</a> with Anime-Sama and Voiranime. Local catalog, client-side scraping, basic search.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
