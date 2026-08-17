@@ -11,3 +11,7 @@ api_cache/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.env
+.env.local
+.env.*
+!.env.example

@@ -57,11 +57,14 @@ playwright install chromium
 
 ### Environment Variables
 
+Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set the variables directly in your environment:
+
 | Var | Default | Description |
 |-----|---------|-------------|
 | `PORT` | `20100` | Server port |
 | `HOST` | `0.0.0.0` | Bind address |
 | `ANISAMA_DATA_DIR` | (auto) | Data directory for catalog/cache |
+| `ANISAMA_PLAYWRIGHT_EXECUTABLE_PATH` | (auto) | Path to Playwright Chromium executable |
 
 ## Structure
 

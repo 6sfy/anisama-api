@@ -11,6 +11,10 @@ import time
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from src.routes import ROUTES, LEGACY_PREFIXES
 from src.routes.legacy import handle as legacy_handle
 from src.db.connection import init_db
