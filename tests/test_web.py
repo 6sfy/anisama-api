@@ -20,3 +20,9 @@ def test_a11y_navigation_is_self_contained():
     # window.history : script.js déclare `let history` (historique terminal)
     assert "window.history.pushState" in js
     assert not re.search(r"(?<!window\.)history\.pushState", js)
+
+
+def test_docs_have_no_inline_script_handlers():
+    html = (WEB / "index.html").read_text(encoding="utf-8")
+    assert "onclick=" not in html
+    assert "data-page=" in html

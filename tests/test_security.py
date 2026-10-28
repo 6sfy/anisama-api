@@ -24,6 +24,7 @@ class FakeHandler:
     def __init__(self):
         self.status = None
         self.headers = {}
+        self.client_address = ("127.0.0.1", 12345)
         self.wfile = io.BytesIO()
 
     def send_response(self, code):
@@ -91,6 +92,91 @@ def test_ssrf_guard_blocks_local_targets():
     assert not is_safe_external_url("http://127.0.0.1:8080/")
     assert not is_safe_external_url("http://[::1]/")
     assert not is_safe_external_url("http://169.254.169.254/latest/meta-data/")
+
+
+def test_source_counts_normalize_and_include_alts():
+    from src.helpers import source_counts
+
+    catalog = [
+        {"source": None, "alt_source": ["voiranime", "franime"]},
+        {"source": "voiranime", "alt_source": ["franime"]},
+        {"source": "franime"},
+    ]
+    counts = source_counts(catalog)
+    assert counts["anime-sama"] == 1
+    assert counts["voiranime"] == 2
+    assert counts["franime"] == 3
+
+
+def test_sources_and_stats_share_counts(monkeypatch):
+    from src.routes import sources, stats
+
+    catalog = [
+        {"source": None, "alt_source": ["voiranime", "franime"]},
+        {"source": "voiranime", "alt_source": ["franime"]},
+        {"source": "franime"},
+    ]
+    monkeypatch.setattr(sources.cache_mod, "load_catalog", lambda: catalog)
+    monkeypatch.setattr(sources, "get_indexed_count", lambda: (len(catalog), 0))
+    monkeypatch.setattr(stats, "get_indexed_count", lambda: (len(catalog), 0))
+
+    src_handler = FakeHandler()
+    sources.handle(src_handler, {})
+    src_body = json.loads(src_handler.wfile.getvalue())
+
+    stats_handler = FakeHandler()
+    stats.handle(stats_handler, {})
+    stats_body = json.loads(stats_handler.wfile.getvalue())
+
+    src_counts = {s["id"]: s["count"] for s in src_body["sources"]}
+    stats_counts = {k: v["count"] for k, v in stats_body["by_source"].items()}
+    for source_id, count in src_counts.items():
+        assert stats_counts.get(source_id, 0) == count
+
+
+def test_episodes_cache_miss_is_rate_limited(monkeypatch):
+    from src.routes import episodes
+    from src.limits import RateLimiter
+
+    monkeypatch.setattr(episodes, "EPISODE_LIMITER", RateLimiter({"episodes": 1}, 60))
+    monkeypatch.setattr(episodes, "EPISODE_LIMIT", 1)
+    monkeypatch.setattr(episodes, "get_anime_episodes", lambda **k: [])
+    monkeypatch.setattr(episodes.fast_engine, "enabled", lambda: False)
+    monkeypatch.setattr(episodes, "_ep_animesama", lambda url, slug=None: [])
+
+    params = {"source": ["anime-sama"], "slug": ["missing"]}
+    first = FakeHandler()
+    episodes.handle(first, params)
+    assert first.status == 200
+
+    second = FakeHandler()
+    episodes.handle(second, params)
+    assert second.status == 429
+    assert json.loads(second.wfile.getvalue())["error"] == "rate_limited"
+
+
+def test_episodes_cache_hit_does_not_consume_limit(monkeypatch):
+    from src.routes import episodes
+    from src.limits import RateLimiter
+
+    cached = [{"number": 1, "season": "S1", "lang": "vostfr"}]
+    monkeypatch.setattr(episodes, "EPISODE_LIMITER", RateLimiter({"episodes": 1}, 60))
+    monkeypatch.setattr(episodes, "EPISODE_LIMIT", 1)
+    monkeypatch.setattr(episodes, "get_anime_episodes", lambda **k: cached)
+
+    for _ in range(2):
+        handler = FakeHandler()
+        episodes.handle(handler, {"source": ["anime-sama"], "slug": ["cached"]})
+        assert handler.status == 200
+
+
+def test_engine_status_is_minimal():
+    from src.routes import engine as engine_route
+
+    handler = FakeHandler()
+    engine_route.handle_status(handler, {})
+    body = json.loads(handler.wfile.getvalue())
+    assert set(body) == {"engine", "enabled"}
 
 
 def test_media_url_detection():
@@ -295,6 +381,7 @@ def test_player_hls_uses_hlsjs(monkeypatch):
     assert '<video id="video"' in html
     assert "hls.js@1.5.20" in html
     assert "media-src http: https: blob:" in handler._csp
+    assert "nonce-" in handler._csp
 
 
 def test_player_uses_ansembed_for_known_hls(monkeypatch):
@@ -428,9 +515,32 @@ def test_html_404_does_not_leak_python(live_server):
 def test_docs_have_csp_and_cache(live_server):
     status, headers, body = _request(live_server, "/")
     assert status == 200
-    assert "default-src 'self'" in headers["Content-Security-Policy"]
+    csp = headers["Content-Security-Policy"]
+    assert "default-src 'self'" in csp
+    assert "script-src 'self'" in csp
+    assert "script-src 'self' 'unsafe-inline'" not in csp
     assert "max-age" in headers["Cache-Control"]
     assert b"anisama" in body.lower()
+
+
+def test_security_txt_is_served(live_server):
+    status, headers, body = _request(live_server, "/.well-known/security.txt")
+    assert status == 200
+    assert b"Contact:" in body
+
+
+def test_head_health_returns_headers_without_body(live_server):
+    status, headers, body = _request(live_server, "/health", method="HEAD")
+    assert status == 200
+    assert body == b""
+    assert headers["Content-Type"].startswith("application/json")
+
+
+def test_head_api_route_returns_200(live_server):
+    status, headers, body = _request(live_server, "/api/v2/engine", method="HEAD")
+    assert status == 200
+    assert body == b""
+    assert headers["Content-Type"].startswith("application/json")
 
 
 def test_robots_txt_blocks_api(live_server):

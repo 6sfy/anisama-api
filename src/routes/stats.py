@@ -1,24 +1,20 @@
 from collections import Counter
 
-from src.helpers import send_json
+from src.helpers import send_json, source_counts
 from src.db.models import get_indexed_count
 from anisama import cache as cache_mod
 
 
 def handle(handler, _params):
     cat = cache_mod.load_catalog()
-    indexed, with_eps = get_indexed_count()
+    indexed, _with_eps = get_indexed_count()
+    src_counts = source_counts(cat)
 
-    src_counts = Counter()
     genre_counts = Counter()
     lang_counts = Counter()
     years = []
 
     for e in cat:
-        raw = e.get("source", "catalog")
-        src = "anime-sama" if raw == "catalog" else raw
-        src_counts[src] += 1
-
         for g in e.get("genres", []):
             if g:
                 genre_counts[g] += 1
@@ -52,7 +48,6 @@ def handle(handler, _params):
     send_json(handler, {
         "total": len(cat),
         "indexed": indexed,
-        "with_episodes": with_eps,
         "by_source": by_source,
         "top_genres": top_genres,
         "languages": dict(lang_counts.most_common()),

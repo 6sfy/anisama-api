@@ -10,8 +10,8 @@
 </head>
 <body>
 
-<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
-<button class="mobile-toggle" id="menuBtn" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="overlay" data-action="close-menu"></div>
+<button class="mobile-toggle" id="menuBtn" data-action="open-menu">☰</button>
 
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
@@ -24,61 +24,61 @@
   </div>
   <nav class="sidebar-nav" id="nav">
     <div class="nav-group">
-      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.getting_started">Getting Started<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="nav-group-header" data-toggle-group data-i18n="nav.getting_started">Getting Started<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item active" href="#" onclick="return showPage('intro',this)" data-i18n="nav.introduction">Introduction</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('quick',this)" data-i18n="nav.quick_start">Quick Start</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('install',this)" data-i18n="nav.installation">Installation</a></li>
+        <li><a class="nav-group-item active" href="#" data-page="intro" data-i18n="nav.introduction">Introduction</a></li>
+        <li><a class="nav-group-item" href="#" data-page="quick" data-i18n="nav.quick_start">Quick Start</a></li>
+        <li><a class="nav-group-item" href="#" data-page="install" data-i18n="nav.installation">Installation</a></li>
       </ul>
     </div>
     <div class="nav-group">
-      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.architecture">Architecture<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="nav-group-header" data-toggle-group data-i18n="nav.architecture">Architecture<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item" href="#" onclick="return showPage('arch',this)" data-i18n="nav.project_structure">Project Structure</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('api-ref',this)" data-i18n="nav.api_reference">API Reference</a></li>
+        <li><a class="nav-group-item" href="#" data-page="arch" data-i18n="nav.project_structure">Project Structure</a></li>
+        <li><a class="nav-group-item" href="#" data-page="api-ref" data-i18n="nav.api_reference">API Reference</a></li>
       </ul>
     </div>
     <div class="nav-group">
-      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.sources">Sources<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="nav-group-header" data-toggle-group data-i18n="nav.sources">Sources<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item" href="#" onclick="return showPage('sources',this)" data-i18n="nav.all_sources">All 7 Sources</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('animesama',this)">Anime-Sama</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('myfluneo',this)">MyFluneo <span class="badge new">NEW</span></a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('voiranime',this)">Voiranime</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('franime',this)">FRAnime</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('animesultra',this)">AnimesUltra</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('frenchanime',this)">French-Anime</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('animoflix',this)">AnimoFlix</a></li>
+        <li><a class="nav-group-item" href="#" data-page="sources" data-i18n="nav.all_sources">All 7 Sources</a></li>
+        <li><a class="nav-group-item" href="#" data-page="animesama">Anime-Sama</a></li>
+        <li><a class="nav-group-item" href="#" data-page="myfluneo">MyFluneo <span class="badge new">NEW</span></a></li>
+        <li><a class="nav-group-item" href="#" data-page="voiranime">Voiranime</a></li>
+        <li><a class="nav-group-item" href="#" data-page="franime">FRAnime</a></li>
+        <li><a class="nav-group-item" href="#" data-page="animesultra">AnimesUltra</a></li>
+        <li><a class="nav-group-item" href="#" data-page="frenchanime">French-Anime</a></li>
+        <li><a class="nav-group-item" href="#" data-page="animoflix">AnimoFlix</a></li>
       </ul>
     </div>
     <div class="nav-group">
-      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.cli">CLI<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="nav-group-header" data-toggle-group data-i18n="nav.cli">CLI<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item" href="#" onclick="return showPage('cli',this)" data-i18n="nav.commands">Commands</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('config',this)" data-i18n="nav.settings">Settings</a></li>
+        <li><a class="nav-group-item" href="#" data-page="cli" data-i18n="nav.commands">Commands</a></li>
+        <li><a class="nav-group-item" href="#" data-page="config" data-i18n="nav.settings">Settings</a></li>
       </ul>
     </div>
     <div class="nav-group">
-      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.live_demo">Live Demo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="nav-group-header" data-toggle-group data-i18n="nav.live_demo">Live Demo<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item" href="#" onclick="return showPage('terminal',this)" data-i18n="nav.web_terminal">Web Terminal <span class="badge new">LIVE</span></a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('cmds',this)" data-i18n="nav.terminal_cmds">Terminal Commands</a></li>
+        <li><a class="nav-group-item" href="#" data-page="terminal" data-i18n="nav.web_terminal">Web Terminal <span class="badge new">LIVE</span></a></li>
+        <li><a class="nav-group-item" href="#" data-page="cmds" data-i18n="nav.terminal_cmds">Terminal Commands</a></li>
       </ul>
     </div>
     <div class="nav-group">
-      <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.support">Support<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="nav-group-header" data-toggle-group data-i18n="nav.support">Support<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item" href="#" onclick="return showPage('trouble',this)" data-i18n="nav.troubleshooting">Troubleshooting</a></li>
-        <li><a class="nav-group-item" href="#" onclick="return showPage('changelog',this)" data-i18n="nav.changelog">Changelog</a></li>
+        <li><a class="nav-group-item" href="#" data-page="trouble" data-i18n="nav.troubleshooting">Troubleshooting</a></li>
+        <li><a class="nav-group-item" href="#" data-page="changelog" data-i18n="nav.changelog">Changelog</a></li>
       </ul>
     </div>
   </nav>
   <div class="sidebar-footer">
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">
+    <button class="theme-btn" id="themeBtn" data-action="theme">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <span id="themeLabel" data-i18n="theme.dark">Dark Mode</span>
     </button>
-    <button class="lang-btn" id="langBtn" onclick="toggleLang()">
+    <button class="lang-btn" id="langBtn" data-action="lang">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <span id="langLabel">EN</span>
     </button>
@@ -197,7 +197,7 @@
             <tr><td><code>GET</code></td><td><code>/api/v2/resolve-episode?source=SRC&amp;slug=SLUG&amp;num=NUM</code></td><td>Resolve an episode number. Uses absolute numbering for anime-sama and accepts <code>&amp;season=N&amp;lang=vo|vf</code> for franime.</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/sources</code></td><td>List available sources with entry counts.</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/info?title=TITLE</code></td><td>AniList info for an anime (score, studios, synopsis).</td></tr>
-            <tr><td><code>GET</code></td><td><code>/api/v2/engine</code></td><td>Fast engine status (enabled, cache size, proxy).</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/engine</code></td><td>Fast engine status (enabled).</td></tr>
             <tr><td><code>GET</code></td><td><code>/health</code></td><td>Liveness probe.</td></tr>
             <tr><td><code>GET</code></td><td><code>/player?url=URL&amp;title=TITLE</code></td><td>HTML player page with iframe.</td></tr>
           </tbody>
@@ -210,8 +210,9 @@
         <table>
           <thead><tr><th data-i18n="api.rate_class">Class</th><th data-i18n="api.rate_endpoints">Endpoints</th><th data-i18n="api.rate_limit">Limit</th></tr></thead>
           <tbody>
-            <tr><td>Light</td><td>catalog, stats, sources, info, health</td><td><code>60/min</code></td></tr>
-            <tr><td>Heavy</td><td>search, episodes, seasons, hosts, resolve</td><td><code>20/min</code></td></tr>
+            <tr><td>Light</td><td>catalog, stats, sources, info, health, episodes (cached)</td><td><code>60/min</code></td></tr>
+            <tr><td>Heavy</td><td>search, seasons, hosts, resolve</td><td><code>20/min</code></td></tr>
+            <tr><td>Episodes</td><td>episodes (cache miss only)</td><td><code>20/min</code></td></tr>
             <tr><td>Resolve</td><td>resolve-episode</td><td><code>5/min</code></td></tr>
           </tbody>
         </table>
@@ -221,7 +222,7 @@
 <span class="c-comment" data-i18n="api.rate_429_comment"># HTTP 429 — too many requests</span>
 {"error": "rate_limited", "request_id": "..."}
       </div></div>
-      <p data-i18n="api.rate_config">Configure with <code>ANISAMA_RATE_LIMIT_GLOBAL</code>, <code>ANISAMA_RATE_LIMIT_HEAVY</code>, <code>ANISAMA_RATE_LIMIT_RESOLVE</code> and <code>ANISAMA_RATE_LIMIT_WINDOW</code> (<code>0</code> disables a tier). Behind Cloudflare, set <code>ANISAMA_TRUST_PROXY=1</code>.</p>
+      <p data-i18n="api.rate_config">Configure with <code>ANISAMA_RATE_LIMIT_GLOBAL</code>, <code>ANISAMA_RATE_LIMIT_HEAVY</code>, <code>ANISAMA_RATE_LIMIT_EPISODES</code>, <code>ANISAMA_RATE_LIMIT_RESOLVE</code> and <code>ANISAMA_RATE_LIMIT_WINDOW</code> (<code>0</code> disables a tier). Behind Cloudflare, set <code>ANISAMA_TRUST_PROXY=1</code>.</p>
 
       <h2 data-i18n="api.example_search">Example: Search</h2>
       <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
@@ -424,6 +425,7 @@
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx2"><strong>Episode cache</strong> : resolving one episode stores the full list without erasing already-resolved URLs.</span></div>
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx3"><strong>Sources</strong> : FRAnime was missing from the docs; all 7 sources are now listed and documented.</span></div>
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx4"><strong>HLS playback</strong> : IP/ASN-bound <code>m3u8</code> tokens fall back to the ansembed iframe in <code>/player</code>.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx5"><strong>API hygiene</strong> : episodes cache misses limited to 20/min, HEAD supported for probes, minimal <code>/engine</code>, and <code>/stats</code> + <code>/sources</code> share the same counts.</span></div>
           <div class="cl-item"><span class="cl-tag up">UP</span><span class="cl-text" data-i18n="changelog.v201.up1"><strong>Light mode</strong> : warm cream theme with readable code blocks, tables and terminal.</span></div>
         </div>
       </div>

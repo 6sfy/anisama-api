@@ -10,6 +10,7 @@ import json
 import re
 import socket
 import uuid
+from collections import Counter
 from functools import lru_cache
 from urllib.parse import urlparse
 
@@ -105,6 +106,27 @@ def is_safe_external_url(url, max_len=2048):
     if not host:
         return False
     return _host_is_public(host)
+
+
+def source_counts(catalog):
+    """Count unique catalog entries available on each source.
+
+    Entries for Anime-Sama may use a missing/None/`catalog` source field;
+    they are all normalized to `anime-sama`. `alt_source` entries count as
+    availability on the secondary source, exactly as shown by `/sources`.
+    """
+    counts = Counter()
+    for entry in catalog or []:
+        raw = (entry.get("source") or "catalog").strip().lower()
+        source = "anime-sama" if raw in ("catalog", "anime-sama") else raw
+        sources = {source}
+        for alt in entry.get("alt_source") or []:
+            alt = (alt or "").strip().lower()
+            if alt:
+                sources.add(alt)
+        for name in sources:
+            counts[name] += 1
+    return counts
 
 
 # ── Media URL helpers ──

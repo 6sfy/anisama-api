@@ -2,12 +2,16 @@ import logging
 import time
 
 from src.helpers import (send_json, send_internal_error, is_safe_external_url,
-                         playwright_available)
+                         playwright_available, request_id)
 from src.db.models import get_anime_episodes, save_episodes
+from src.limits import RateLimiter, client_ip, env_int, RATE_LIMIT_WINDOW
 from src import fast_engine
 from anisama import cache as cache_mod
 
 logger = logging.getLogger("anisama-api")
+
+EPISODE_LIMIT = env_int("ANISAMA_RATE_LIMIT_EPISODES", 20)
+EPISODE_LIMITER = RateLimiter({"episodes": EPISODE_LIMIT}, RATE_LIMIT_WINDOW)
 
 
 def handle(handler, params):
@@ -46,6 +50,12 @@ def handle(handler, params):
         return
 
     logger.info("  -> Cache MISS, fetching episode list...")
+
+    allowed, remaining, reset = EPISODE_LIMITER.check(client_ip(handler), "episodes")
+    handler._rate_limit = (EPISODE_LIMIT, remaining, reset)
+    if not allowed:
+        send_json(handler, {"error": "rate_limited", "request_id": request_id(handler)}, 429)
+        return
 
     # ── Fast path : moteur anime_engine (embeds directs, zéro bs4/playwright) ──
     if fast_engine.enabled() and source in ("anime-sama", "franime"):

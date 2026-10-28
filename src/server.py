@@ -14,7 +14,6 @@ import sys
 import threading
 import time
 import uuid
-from collections import deque
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
@@ -29,6 +28,7 @@ from src.db.connection import init_db
 from src.db.models import import_catalog, get_indexed_count
 from src.db.indexer import BackgroundIndexer
 from src.helpers import send_json, send_internal_error
+from src.limits import RateLimiter, RATE_LIMIT_WINDOW, client_ip
 from anisama import cache as cache_mod
 from anisama.scraper.base import find_active_domain
 
@@ -56,13 +56,12 @@ MAX_CONCURRENCY = _env_int("ANISAMA_MAX_CONCURRENCY", 20)
 
 # Rate limits: requests per IP per window, independent budget per class.
 # 0 disables a class (e.g. ANISAMA_RATE_LIMIT_RESOLVE=0 on an open mirror).
-RATE_LIMIT_WINDOW = _env_int("ANISAMA_RATE_LIMIT_WINDOW", 60)
 RATE_LIMITS = {
     "light": _env_int("ANISAMA_RATE_LIMIT_GLOBAL", 60),
     "heavy": _env_int("ANISAMA_RATE_LIMIT_HEAVY", 20),
     "resolve": _env_int("ANISAMA_RATE_LIMIT_RESOLVE", 5),
 }
-HEAVY_PATHS = ("/api/v2/search", "/api/v2/episodes", "/api/v2/resolve",
+HEAVY_PATHS = ("/api/v2/search", "/api/v2/resolve",
                "/api/v2/seasons", "/api/v2/hosts", "/api/v2/info",
                "/api/resolve", "/api/episodes")
 RESOLVE_PATHS = ("/api/v2/resolve-episode",)
@@ -105,50 +104,6 @@ def _cors_origin_allowed(origin):
     return normalized in allowed or bool(_LOCAL_ORIGIN_RE.match(normalized))
 
 
-class RateLimiter:
-    """Per-IP sliding-window rate limiter (thread-safe, in-memory).
-
-    Each IP keeps an independent budget per request class
-    (light / heavy / resolve), so cheap requests never eat the heavy quota.
-    """
-
-    def __init__(self, limits, window):
-        self.limits = limits
-        self.window = window
-        self._hits = {}
-        self._lock = threading.Lock()
-
-    def check(self, ip, tier="light"):
-        now = time.time()
-        limit = self.limits.get(tier, self.limits.get("light", 0))
-        if limit <= 0:
-            return True, 0, 0
-        with self._lock:
-            buckets = self._hits.get(ip)
-            if buckets is None:
-                buckets = {name: deque() for name in self.limits}
-                self._hits[ip] = buckets
-            bucket = buckets.setdefault(tier, deque())
-            while bucket and now - bucket[0] > self.window:
-                bucket.popleft()
-            allowed = len(bucket) < limit
-            if allowed:
-                bucket.append(now)
-            remaining = max(0, limit - len(bucket))
-            reset = int(self.window - (now - bucket[0])) + 1 if bucket else self.window
-            self._maybe_prune(now)
-            return allowed, remaining, max(1, reset)
-
-    def _maybe_prune(self, now):
-        """Drop idle IPs so spoofed/rotating addresses cannot grow memory forever."""
-        if len(self._hits) < 4096:
-            return
-        stale = [ip for ip, buckets in self._hits.items()
-                 if all(not b or now - b[-1] > self.window for b in buckets.values())]
-        for ip in stale:
-            self._hits.pop(ip, None)
-
-
 RATE_LIMITER = RateLimiter(RATE_LIMITS, RATE_LIMIT_WINDOW)
 CONCURRENCY = threading.BoundedSemaphore(MAX_CONCURRENCY)
 
@@ -169,7 +124,7 @@ main{{text-align:center;padding:2rem}}h1{{font-size:3rem;margin:0 0 .5rem;color:
 
 _CSP_DOCS = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline'; "
+    "script-src 'self'; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src https://fonts.gstatic.com; "
     "img-src 'self' data:; "
@@ -239,14 +194,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
     # ── request context ──
 
     def _client_ip(self):
-        if TRUST_PROXY:
-            cf = self.headers.get("CF-Connecting-IP")
-            if cf:
-                return cf.strip()
-            xff = self.headers.get("X-Forwarded-For")
-            if xff:
-                return xff.split(",")[0].strip()
-        return self.client_address[0]
+        return client_ip(self)
 
     def _authorized(self, path):
         if not API_TOKEN:
@@ -317,16 +265,22 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             send_internal_error(self, exc, logger, path)
 
     def do_GET(self):
+        self._dispatch_get(head=False)
+
+    def do_HEAD(self):
+        self._dispatch_get(head=True)
+
+    def _dispatch_get(self, head):
         self.request_id = uuid.uuid4().hex[:16]
         if not CONCURRENCY.acquire(blocking=False):
             send_json(self, {"error": "server_busy", "request_id": self.request_id}, 503)
             return
         try:
-            self._handle_get()
+            self._handle_get(head=head)
         finally:
             CONCURRENCY.release()
 
-    def _handle_get(self):
+    def _handle_get(self, head=False):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
         params = parse_qs(parsed.query)
@@ -346,6 +300,8 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 handler(self, params)
             elif path in LEGACY_PREFIXES:
                 legacy_handle(self, path, params)
+            elif head:
+                super().do_HEAD()
             else:
                 super().do_GET()
         except Exception as exc:

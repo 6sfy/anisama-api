@@ -20,6 +20,10 @@ All notable changes to `anisama-api` are documented in this file.
 - Light mode is now warm cream with readable code blocks, table headers, inline code and terminal.
 - Code block text no longer disappears in light mode.
 - HLS playback: IP/ASN-bound server tokens fall back to the ansembed iframe; the resolver extracts media from embed pages and ignores stale non-media cache entries.
+- /api/v2/episodes now has a dedicated 20/min per-IP limiter on cache misses only.
+- HEAD requests are routed through the JSON handlers, so /health works for monitoring probes.
+- /api/v2/engine exposes only {engine, enabled}; /stats and /sources share the same per-source counters; .well-known/security.txt added.
+- Docs CSP no longer allows unsafe-inline scripts (delegated listeners); player scripts use a per-request nonce.
 
 ### Changed
 

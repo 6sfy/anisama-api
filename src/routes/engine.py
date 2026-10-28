@@ -67,12 +67,7 @@ def handle_health(handler, _params):
 
 
 def handle_status(handler, _params):
-    import os
     send_json(handler, {
         "engine": "anime_engine",
         "enabled": fast_engine.enabled(),
-        "cache_entries": fast_engine.cache_size(),
-        "proxy_set": bool(os.environ.get("ENGINE_PROXY", "").strip()),
-        "sources": ["anime-sama", "franime"],
-        "note": "ANISAMA_FAST_ENGINE=0 pour desactiver, ENGINE_PROXY pour contourner un blocage Cloudflare",
     })

@@ -1,0 +1,4 @@
+Contact: https://github.com/6sfy/anisama-api/issues
+Expires: 2027-10-28T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: https://anisama.sexcaller.lol/.well-known/security.txt

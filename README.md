@@ -48,7 +48,7 @@ Server starts on `http://0.0.0.0:20100`. Set `PORT` and `HOST` env vars to custo
 | GET | `/api/v2/resolve-episode?source=SOURCE&slug=SLUG&num=NUM` | Resolve one episode (`&season=N&lang=vo|vf` for franime) |
 | GET | `/api/v2/seasons?source=SOURCE&slug=SLUG` | **New** — season list via fast engine |
 | GET | `/api/v2/hosts?slug=SLUG&season_url=URL` | **New** — distinct video hosts of an anime-sama season |
-| GET | `/api/v2/engine` | **New** — fast engine status (enabled, cache, proxy) |
+| GET | `/api/v2/engine` | **New** — fast engine status (enabled) |
 | GET | `/health` | Liveness probe (no cache, no network) |
 | GET | `/api/v2/sources` | Available sources with counts |
 | GET | `/api/v2/stats` | Catalog statistics |
@@ -118,7 +118,8 @@ Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set th
 | `ENGINE_PROXY` | (empty) | Outbound proxy for the fast engine (Cloudflare bypass) |
 | `ENGINE_TIMEOUT` | `25` | Fast engine network timeout (seconds) |
 | `ANISAMA_RATE_LIMIT_GLOBAL` | `60` | Light requests per IP per window (`0` disables) |
-| `ANISAMA_RATE_LIMIT_HEAVY` | `20` | Search/resolve/episodes requests per IP per window |
+| `ANISAMA_RATE_LIMIT_HEAVY` | `20` | Search/seasons/hosts/resolve requests per IP per window |
+| `ANISAMA_RATE_LIMIT_EPISODES` | `20` | Episode-list cache misses per IP per window (`0` disables) |
 | `ANISAMA_RATE_LIMIT_RESOLVE` | `5` | `resolve-episode` requests per IP per window |
 | `ANISAMA_RATE_LIMIT_WINDOW` | `60` | Rate-limit window in seconds |
 | `ANISAMA_API_TOKEN` | (empty) | When set, expensive endpoints require `Authorization: Bearer <token>` |
@@ -128,7 +129,7 @@ Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set th
 
 ### Security
 
-- Per-IP rate limiting with independent light/heavy/resolve budgets, `429` + `Retry-After`/`RateLimit-*` headers.
+- Per-IP rate limiting with independent light/heavy/episodes/resolve budgets, `429` + `Retry-After`/`RateLimit-*` headers. Episode scraping is limited on cache misses only.
 - SSRF guard on every client-supplied URL; static file serving is confined to `src/web`.
 - Opaque `500` responses (`{"error": "internal_error", "request_id": "..."}`); exception details stay in server logs.
 - `Strict-Transport-Security`, CSP on HTML pages, `nosniff`, `X-Frame-Options`, `Referrer-Policy`.
@@ -141,8 +142,9 @@ Per IP, sliding 60-second window, with independent budgets:
 
 | Class | Endpoints | Limit |
 |-------|-----------|-------|
-| Light | catalog, stats, sources, info, health | 60/min |
-| Heavy | search, episodes, seasons, hosts, resolve | 20/min |
+| Light | catalog, stats, sources, info, health, episodes (cached) | 60/min |
+| Heavy | search, seasons, hosts, resolve | 20/min |
+| Episodes | episodes (cache miss only) | 20/min |
 | Resolve | resolve-episode | 5/min |
 
 Exceeded limits return `429` with `Retry-After`; every response includes `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`. Behind Cloudflare, set `ANISAMA_TRUST_PROXY=1` to limit on `CF-Connecting-IP` instead of the shared edge IP.

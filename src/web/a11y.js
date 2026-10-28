@@ -41,7 +41,7 @@
     $$('.copy-btn').forEach(b => { b.setAttribute('aria-label', t('copy')); b.setAttribute('type', 'button'); });
   }
 
-  const linkFor = id => $$('.nav-group-item').find(a => (a.getAttribute('onclick') || '').includes("'" + id + "'"));
+  const linkFor = id => $$('.nav-group-item').find(a => a.getAttribute('data-page') === id);
 
   function setCurrent(link) {
     $$('.nav-group-item').forEach(a => a.removeAttribute('aria-current'));
@@ -96,10 +96,28 @@
     });
 
     $$('.nav-group-item').forEach(a => {
-      const m = (a.getAttribute('onclick') || '').match(/showPage\('([^']+)'/);
-      if (m) a.setAttribute('href', '#/' + m[1]);
+      const page = a.getAttribute('data-page');
+      if (page) a.setAttribute('href', '#/' + page);
     });
     setCurrent($('.nav-group-item.active'));
+
+    document.addEventListener('click', e => {
+      const link = e.target.closest('.nav-group-item[data-page]');
+      if (link) {
+        e.preventDefault();
+        window.showPage?.(link.getAttribute('data-page'));
+        return;
+      }
+      const group = e.target.closest('[data-toggle-group]');
+      if (group) { window.toggleGroup?.(group); return; }
+      const action = e.target.closest('[data-action]');
+      if (!action) return;
+      const name = action.getAttribute('data-action');
+      if (name === 'theme') window.toggleTheme?.();
+      else if (name === 'lang') window.toggleLang?.();
+      else if (name === 'open-menu') window.toggleSidebar?.();
+      else if (name === 'close-menu') window.closeSidebar?.();
+    });
 
     $$('.nav-group-header').forEach(h => {
       h.setAttribute('role', 'button'); h.setAttribute('tabindex', '0'); h.setAttribute('aria-expanded', 'true');

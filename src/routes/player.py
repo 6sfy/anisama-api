@@ -1,5 +1,7 @@
+import base64
 import html
 import json
+import os
 import re
 
 from src.helpers import send_json, is_safe_external_url, media_type
@@ -45,13 +47,14 @@ def handle(handler, params):
         player = iframe.format(u=safe_url_attr, p=iframe_policy)
         hls_script = ""
 
+    nonce = base64.b64encode(os.urandom(16)).decode()
     csp = (
-        "default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "default-src 'none'; script-src 'nonce-{n}' https://cdn.jsdelivr.net; "
         "style-src 'unsafe-inline'; frame-src http: https:; "
         "img-src http: https: data:; media-src http: https: blob:; "
         "connect-src http: https:; base-uri 'none'; form-action 'none'; "
         "frame-ancestors 'self'"
-    )
+    ).format(n=nonce)
     meta_csp = csp.replace("; frame-ancestors 'self'", "")
 
     html_page = f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -72,7 +75,7 @@ def handle(handler, params):
     <div class="p">{player}</div>
     <div class="i"><span>Source: {html.escape(url[:60])}...</span><button id="copyBtn">Copy</button></div>
     {hls_script}
-    <script>
+    <script nonce="{nonce}">
     (function(){{
       var src = {safe_url_js};
       var copy = document.getElementById('copyBtn');
@@ -98,4 +101,5 @@ def handle(handler, params):
     handler.send_header("Content-Type", "text/html; charset=utf-8")
     handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
-    handler.wfile.write(body)
+    if getattr(handler, "command", "GET") != "HEAD":
+        handler.wfile.write(body)
