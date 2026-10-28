@@ -138,6 +138,7 @@ Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set th
 - CORS restricted to an origin whitelist; `Authorization`/`X-API-Key` allowed for authenticated deployments.
 - Client IPs come from `CF-Connecting-IP`/`X-Forwarded-For` only when the peer is a trusted proxy; logs and rate limits are per client.
 - Optional `X-Origin-Secret` origin lock; firewall the origin to Cloudflare IPs or use a cloudflared tunnel.
+- `Host` allowlist: requests addressed to the origin IP (or any non-configured host) are closed without an HTTP response.
 - Sources that cannot serve requests (Playwright missing for MyFluneo/AnimoFlix) are not advertised by `/api/v2/sources`.
 
 ### Rate limits

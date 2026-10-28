@@ -1,5 +1,6 @@
 """Garde-fous sécurité — erreurs opaques, rate limiting, CORS, 404 unifié."""
 
+import http.client
 import io
 import json
 import sys
@@ -7,6 +8,7 @@ import threading
 import urllib.error
 import urllib.request
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 
@@ -620,6 +622,30 @@ def test_bearer_token_protects_expensive_endpoints(live_server, monkeypatch):
     # Health stays public.
     status, _, _ = _request(live_server, "/api/v2/health")
     assert status == 200
+
+
+def _host_request(base, host):
+    parsed = urlparse(base)
+    conn = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=5)
+    try:
+        conn.putrequest("GET", "/health", skip_host=True)
+        conn.putheader("Host", host)
+        conn.endheaders()
+        resp = conn.getresponse()
+        return resp.status, resp.read()
+    finally:
+        conn.close()
+
+
+def test_direct_ip_host_is_closed_without_response(live_server):
+    with pytest.raises((http.client.RemoteDisconnected, ConnectionResetError, OSError)):
+        _host_request(live_server, "203.0.113.10")
+
+
+def test_allowed_host_still_responds(live_server):
+    status, body = _host_request(live_server, "anisama.sexcaller.lol")
+    assert status == 200
+    assert json.loads(body)["status"] == "ok"
 
 
 def test_rate_limit_is_per_client_ip(live_server, monkeypatch):

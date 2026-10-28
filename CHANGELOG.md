@@ -26,6 +26,7 @@ All notable changes to `anisama-api` are documented in this file.
 - Docs CSP no longer allows unsafe-inline scripts (delegated listeners); player scripts use a per-request nonce.
 - Client IP is resolved from CF-Connecting-IP/X-Forwarded-For only from trusted proxies; access logs and rate limits are per client.
 - Optional X-Origin-Secret origin lock; proxy trust modes auto/1/0 + ANISAMA_TRUSTED_PROXIES.
+- Host allowlist: direct origin-IP requests are closed without a response (ANISAMA_ALLOWED_HOSTS).
 
 ### Changed
 

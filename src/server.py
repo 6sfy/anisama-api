@@ -77,6 +77,24 @@ AUTH_PATHS = ("/api/v2/episodes", "/api/v2/resolve", "/api/v2/resolve-episode",
 # header with a Cloudflare Transform Rule and firewall the origin to CF.
 ORIGIN_SECRET = (os.environ.get("ANISAMA_ORIGIN_SECRET") or "").strip()
 
+
+def _normalize_host(value):
+    host = (value or "").strip().lower().rstrip(".")
+    if host.startswith("["):
+        end = host.find("]")
+        return host[1:end] if end != -1 else host
+    if host.count(":") == 1:
+        return host.split(":", 1)[0]
+    return host
+
+
+_DEFAULT_ALLOWED_HOSTS = ("anisama.sexcaller.lol", "localhost", "127.0.0.1", "::1")
+ALLOWED_HOSTS = {
+    _normalize_host(h)
+    for h in (os.environ.get("ANISAMA_ALLOWED_HOSTS") or "").split(",")
+    if h.strip()
+} or set(_DEFAULT_ALLOWED_HOSTS)
+
 # CORS: same-origin needs no header. Default whitelist = prod domain + local.
 CORS_ORIGINS = (os.environ.get("ANISAMA_CORS_ORIGINS") or "").strip()
 CORS_DEFAULT_ORIGINS = (
@@ -227,8 +245,15 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
 
     # ── methods ──
 
+    def _host_allowed(self):
+        host = _normalize_host(self.headers.get("Host"))
+        return host in ALLOWED_HOSTS
+
     def do_OPTIONS(self):
         self.request_id = uuid.uuid4().hex[:16]
+        if not self._host_allowed():
+            self.close_connection = True
+            return
         if ORIGIN_SECRET:
             supplied = (self.headers.get("X-Origin-Secret") or "").strip()
             if not supplied or not hmac.compare_digest(supplied, ORIGIN_SECRET):
@@ -239,6 +264,9 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         self.request_id = uuid.uuid4().hex[:16]
+        if not self._host_allowed():
+            self.close_connection = True
+            return
         if not CONCURRENCY.acquire(blocking=False):
             send_json(self, {"error": "server_busy", "request_id": self.request_id}, 503)
             return
@@ -283,6 +311,9 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
 
     def _dispatch_get(self, head):
         self.request_id = uuid.uuid4().hex[:16]
+        if not self._host_allowed():
+            self.close_connection = True
+            return
         if not CONCURRENCY.acquire(blocking=False):
             send_json(self, {"error": "server_busy", "request_id": self.request_id}, 503)
             return
@@ -472,6 +503,7 @@ def main():
     logger.info("Auth token: %s", "ACTIF" if API_TOKEN else "désactivée")
     logger.info("Trust proxy: %s", trust_proxy_mode())
     logger.info("Origin lock: %s", "ACTIF" if ORIGIN_SECRET else "désactivée")
+    logger.info("Allowed hosts: %s", ", ".join(sorted(ALLOWED_HOSTS)))
     if not ORIGIN_SECRET:
         logger.warning(
             "Origin lock désactivée : si l'origine est joignable directement, "
