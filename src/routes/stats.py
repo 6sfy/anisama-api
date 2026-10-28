@@ -1,8 +1,43 @@
+import re
 from collections import Counter
 
 from src.helpers import send_json, source_counts
 from src.db.models import get_indexed_count
 from anisama import cache as cache_mod
+
+_FORMAT_GENRES = {
+    "anime",
+    "animes",
+    "film",
+    "films",
+    "scan",
+    "scans",
+    "voirdrama",
+    "top anime",
+    "top animes",
+    "manga",
+    "manhwa",
+    "manhua",
+    "webtoon",
+}
+
+
+def _entry_genres(entry):
+    raw = entry.get("genres")
+    if not raw:
+        raw = entry.get("genre")
+    if isinstance(raw, str):
+        raw = [raw]
+    if not isinstance(raw, (list, tuple, set)):
+        return []
+
+    genres = []
+    for value in raw:
+        for part in re.split(r"[,/;]", str(value)):
+            name = part.strip()
+            if name and name.lower() not in _FORMAT_GENRES:
+                genres.append(name)
+    return genres
 
 
 def handle(handler, _params):
@@ -15,9 +50,8 @@ def handle(handler, _params):
     years = []
 
     for e in cat:
-        for g in e.get("genres", []):
-            if g:
-                genre_counts[g] += 1
+        for g in _entry_genres(e):
+            genre_counts[g] += 1
 
         title = e.get("title", "")
         if title.lower().endswith(" vf"):

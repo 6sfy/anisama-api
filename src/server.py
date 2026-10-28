@@ -27,6 +27,7 @@ from src.routes.legacy import handle as legacy_handle
 from src.db.connection import init_db
 from src.db.models import import_catalog, get_indexed_count
 from src.db.indexer import BackgroundIndexer
+from src.catalog_sync import sync_anime_sama_catalog
 from src.helpers import send_json, send_internal_error
 from src.limits import (RateLimiter, RATE_LIMIT_WINDOW, client_ip,
                         trust_proxy_mode)
@@ -472,6 +473,24 @@ def main():
         import_catalog()
         indexed, with_eps = get_indexed_count()
 
+    catalog_now = cache_mod.load_catalog()
+    if not any(
+        (entry.get("source") or "").lower() == "anime-sama"
+        for entry in catalog_now
+    ):
+        domain = find_active_domain() or "anime-sama.to"
+        try:
+            synced = sync_anime_sama_catalog(domain)
+            if synced:
+                added += import_catalog()
+                indexed, with_eps = get_indexed_count()
+                logger.info(
+                    "Anime-Sama catalog: %d entries (SQLite: %d anime, %d added)",
+                    synced, indexed, added,
+                )
+        except Exception as exc:
+            logger.warning("Anime-Sama catalog sync failed: %s", exc)
+
     indexer = BackgroundIndexer()
     indexer.start()
     logger.info("Background indexer started")
@@ -486,10 +505,11 @@ def main():
                     continue
                 before = len(cache_mod.load_catalog())
                 cache_mod.download_combined_catalog(domain, enrich=False)
+                synced = sync_anime_sama_catalog(domain)
                 after = len(cache_mod.load_catalog())
                 added = import_catalog()
-                logger.info("Daily scrape: {before} -> {after} entries ({new} new in catalog, {db} new in DB)".format(
-                    before=before, after=after, new=after-before, db=added))
+                logger.info("Daily scrape: {before} -> {after} entries ({new} new in catalog, {db} new in DB, {anime} Anime-Sama)".format(
+                    before=before, after=after, new=after-before, db=added, anime=synced))
             except Exception as exc:
                 logger.error("Daily scrape error: {e}".format(e=exc))
 
