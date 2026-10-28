@@ -1,11 +1,5 @@
-/* ======================================================
-   anisama Web Docs — JavaScript
-   ====================================================== */
-
-// ── Config ──
 const API_BASE = (window.API_URL || "").replace(/\/$/, "") || "";
 
-// ── i18n ──
 const I18N = {
   fr: {
     'nav.getting_started': 'Getting Started',
@@ -19,7 +13,7 @@ const I18N = {
     'nav.installation': 'Installation',
     'nav.project_structure': 'Project Structure',
     'nav.api_reference': 'API Reference',
-    'nav.all_sources': 'All 6 Sources',
+    'nav.all_sources': 'All 7 Sources',
     'nav.commands': 'Commands',
     'nav.settings': 'Settings',
     'nav.web_terminal': 'Web Terminal',
@@ -32,11 +26,11 @@ const I18N = {
     'theme.light': 'Mode Clair',
     'lang.en': 'EN',
     'lang.fr': 'FR',
-    'hero.intro.desc': 'CLI Anime VOSTFR/VF. Cherche, stream et telecharge tes animes depuis <strong style="color:var(--color-accent)">6 sources francaises</strong> — depuis ton terminal, ou via l\'<strong style="color:var(--color-accent)">API centrale</strong>.',
-    'card.6_sources': '6 Sources FR',
-    'card.6_sources.desc': 'Anime-Sama, MyFluneo, Voiranime, AnimesUltra, French-Anime & AnimoFlix.',
+    'hero.intro.desc': 'CLI Anime VOSTFR/VF. Cherche, stream et telecharge tes animes depuis <strong style="color:var(--color-accent)">7 sources françaises</strong> — depuis ton terminal, ou via l\'<strong style="color:var(--color-accent)">API centrale</strong>.',
+    'card.6_sources': '7 Sources FR',
+    'card.6_sources.desc': 'Anime-Sama, Voiranime, FRAnime, MyFluneo, AnimesUltra, French-Anime & AnimoFlix.',
     'card.smart_search': 'Recherche intelligente',
-    'card.smart_search.desc': 'Fuzzy matching realiste (rapidfuzz), dedup par titre, 6 sources en cascade.',
+    'card.smart_search.desc': 'Fuzzy matching realiste (rapidfuzz), dedup par titre, 7 sources en cascade.',
     'card.api': 'API centralisee',
     'card.api.desc': 'Server-side scraping + resolution. Le client ne fait que consommer du JSON propre.',
     'card.stream': 'Stream & Download',
@@ -78,7 +72,7 @@ const I18N = {
     'api.example_search': 'Example : Search',
     'api.example_search.comment': '# Retourne des resultats dedup avec scores realistes',
     'api.example_catalog': 'Example : Catalog',
-    'hero.sources.title': '6 Sources FR',
+    'hero.sources.title': '7 Sources FR',
     'hero.sources.desc': 'Toutes les plateformes integrees dans l\'API et le CLI.',
     'sources.animesama.desc': 'Source principale. ~1500 entrees. Lecteurs embed : vidmoly, sendvid, sibnet, smoothpre, streamwish, oneupload.',
     'sources.animesama.tag': 'Principal',
@@ -86,6 +80,8 @@ const I18N = {
     'sources.myfluneo.tag': 'NEW',
     'sources.voiranime.desc': '~960 entrees. Resolution video interne.',
     'sources.voiranime.tag': 'Secondaire',
+    'sources.franime.desc': 'API JSON publique. Fast engine, index 0-based, résolution watch2 directe.',
+    'sources.franime.tag': 'API',
     'sources.animesultra.desc': '~2600 entrees via sitemap XML. Hosts : vidmoly, sendvid, sibnet, vidstream.',
     'sources.animesultra.tag': 'NEW',
     'sources.frenchanime.desc': 'Hosts : luluvdo, vidmoly, vidara. Scraped via page d\'accueil.',
@@ -102,6 +98,11 @@ const I18N = {
     'animesama.li6': '<strong>oneupload</strong> — upload video',
     'animesama.p2': 'Le systeme de miroirs multiples permet un fallback automatique. Le speed-testing selectionne le miroir le plus rapide. Les saisons <code>Scan</code> / <code>Manhwa</code> / <code>Webtoon</code> sont automatiquement filtrees.',
     'hero.voiranime.desc': 'Source secondaire VOSTFR/VF.',
+    'hero.franime.desc': 'API JSON publique en VOSTFR/VF.',
+    'franime.p1': 'FRAnime (franime.fr) expose une API JSON publique (<code>api.franime.fr</code>). Le fast engine l\'interroge directement : pas de scraping HTML ni de Playwright.',
+    'franime.li1': '<strong>Index d\'épisodes 0-based</strong> — corrige l\'ancien 404 <code>Aucun lecteur disponible</code> dû aux numéros 1-based.',
+    'franime.li2': '<strong>Résolution watch2 directe</strong> — renvoie l\'URL embed utilisée par le player.',
+    'franime.li3': '<strong>VOSTFR/VF</strong> — sélection de la langue via <code>&amp;lang=vo|vf</code>.',
     'voiranime.p1': 'Voiranime fournit un catalogue alternatif avec son propre systeme de resolution video. <strong>~960 entrees</strong> mergees dans le catalogue principal via <code>alt_source</code>.',
     'hero.myfluneo.desc': '~5400 entrees francaises.',
     'myfluneo.p1': 'MyFluneo (myfluneo.eu) est une <strong>nouvelle source</strong> francaise avec <strong>~5400 entrees</strong> VOSTFR/VF. Le site est construit avec Next.js :',
@@ -148,23 +149,23 @@ const I18N = {
     'config.cache_hours': 'Duree de vie du cache catalogue',
     'config.proxy': 'Proxy HTTP (ex: http://127.0.0.1:8080)',
     'hero.terminal.title': 'Terminal Web',
-    'hero.terminal.desc': 'Cherche et explore les animes en direct. Appels API reels sur les 6 sources.',
+    'hero.terminal.desc': 'Cherche et explore les animes en direct. Appels API reels sur les 7 sources.',
     'term.welcome1': 'Terminal Web anisama — <span class="t-accent">help</span> pour les commandes.',
-    'term.welcome2': 'Sources : Anime-Sama · MyFluneo · Voiranime · AnimesUltra · French-Anime · AnimoFlix',
+    'term.welcome2': 'Sources : Anime-Sama · FRAnime · Voiranime · MyFluneo · AnimesUltra · French-Anime · AnimoFlix',
     'hero.cmds.title': 'Commandes du Terminal',
     'cmds.command': 'Commande',
     'cmds.description': 'Description',
     'cmds.example': 'Exemple',
     'cmds.help': 'Affiche l\'aide',
-    'cmds.search': 'Cherche sur les 6 sources',
+    'cmds.search': 'Cherche sur les 7 sources',
     'cmds.num': 'Affiche les episodes d\'un resultat',
     'cmds.play': 'Resout l\'URL video + ouvre le player',
-    'cmds.sources': 'Liste les 6 sources',
+    'cmds.sources': 'Liste les 7 sources',
     'cmds.stats': 'Stats du catalogue',
     'cmds.clear': 'Nettoie le terminal',
     'hero.trouble.title': 'Depannage',
     'trouble.no_results': 'Aucun resultat',
-    'trouble.no_results.desc': 'La recherche utilise le fuzzy matching (rapidfuzz). Essaye des termes plus courts. La recherche cascade 6 sources.',
+    'trouble.no_results.desc': 'La recherche utilise le fuzzy matching (rapidfuzz). Essaye des termes plus courts. La recherche cascade 7 sources.',
     'trouble.player': 'Le player ne se lance pas',
     'trouble.player.desc': 'Installe mpv ou VLC. Utilise <code>anisama -p vlc "titre"</code> pour specifier le player.',
     'trouble.windows': 'Erreur d\'import Windows',
@@ -174,6 +175,23 @@ const I18N = {
     'trouble.resolve': 'API retourne "Could not resolve"',
     'trouble.resolve.desc': 'Certaines sources utilisent Playwright (MyFluneo, AnimoFlix). Verifie que Chromium est installe sur le serveur API.',
     'hero.changelog.title': 'Changelog',
+    'changelog.v201.latest': 'Dernière',
+    'changelog.v201.new1': '<strong>Voiranime</strong> : source réparée et activée par défaut (nouvelles URLs <code>/&lt;slug&gt;/</code>, sagas, VF/VOSTFR, résolution directe).',
+    'changelog.v201.new2': '<strong>Résolution Anime-Sama</strong> : sélection du meilleur miroir résolvable (ansembed/embed4me) et retour d\'un flux <code>m3u8</code> direct.',
+    'changelog.v201.new3': '<strong>Page 404</strong> pour les URLs erronées ; les routes API renvoient toujours une erreur JSON.',
+    'changelog.v201.new4': '<strong>Sécurité</strong> : rate limiting par palier, erreurs génériques avec <code>request_id</code>, HSTS/CSP, CORS whitelist, token Bearer optionnel, <code>robots.txt</code>.',
+    'changelog.v201.fx1': '<strong>Anime-Sama</strong> : les scans/one-shots ne polluent plus la numérotation des épisodes.',
+    'changelog.v201.fx2': '<strong>Cache épisodes</strong> : résoudre un épisode enregistre la liste complète sans écraser les URLs déjà résolues.',
+    'changelog.v201.fx3': '<strong>Sources</strong> : FRAnime manquait dans la doc ; les 7 sources sont maintenant listées et documentées.',
+    'changelog.v201.up1': '<strong>Mode clair</strong> : thème crème avec blocs de code, tableaux et terminal lisibles.',
+    'changelog.v200.new1': '<strong>Fast engine</strong> : Anime-Sama + FRAnime via extraction directe des APIs (10-50x plus rapide, sans BeautifulSoup ni Playwright).',
+    'changelog.v200.new2': 'Nouveaux endpoints : <code>/api/v2/seasons</code>, <code>/api/v2/hosts</code>, <code>/api/v2/engine</code>, <code>/health</code>.',
+    'changelog.v200.new3': 'Resolution en course API/local avec write-back du cache et re-resolution <code>fresh=1</code> des URLs mortes.',
+    'changelog.v200.fx1': '<strong>Scores bornes 0-100</strong> : plus de pourcentages > 100 % dans les resultats de recherche.',
+    'changelog.v200.fx2': '<strong>Lecture</strong> : le CLI resout les embeds (uqload, etc.) en flux direct avant lecture ; fallback navigateur pour les pages watch2.',
+    'changelog.v200.fx3': '<strong>Pterodactyl</strong> : ecoute sur <code>SERVER_PORT</code>, repli automatique sur <code>0.0.0.0</code> si <code>HOST</code> n\'est pas une interface locale.',
+    'changelog.v200.fx4': '<strong>Docs web</strong> : navigation et couche a11y corrigees (<code>a11y.js</code> charge apres <code>script.js</code>).',
+    'changelog.v200.up1': 'Playwright devient optionnel : installation plus legere, plus de disque plein sur les petits conteneurs.',
     'changelog.v110.latest': 'Latest',
     'changelog.v110.new1': '<strong>4 nouvelles sources</strong> : MyFluneo (~5400 entrees), AnimesUltra (~2600), French-Anime, AnimoFlix. Total : <strong>6 sources</strong>.',
     'changelog.v110.new2': '<strong>API centrale v2</strong> — server Python modulaire avec scraping cote serveur. Le client consomme uniquement du JSON propre.',
@@ -187,10 +205,10 @@ const I18N = {
     'changelog.v103.text': 'Release originale par <a href="https://github.com/6sfy" style="color:var(--color-accent)">6sfy</a> avec Anime-Sama et Voiranime. Catalogue local, scraping client-side, recherche basique.',
     'term.help.block': '<div style="line-height:1.8;margin:2px 0">' +
       '<span class="t-accent t-bold">help</span> <span class="t-muted">— Aide</span><br>' +
-      '<span class="t-accent t-bold">search</span> <span style="color:#888">&lt;query&gt;</span> <span class="t-muted">— Chercher sur 6 sources</span><br>' +
+      '<span class="t-accent t-bold">search</span> <span style="color:#888">&lt;query&gt;</span> <span class="t-muted">— Chercher sur 7 sources</span><br>' +
       '<span class="t-accent t-bold">[num]</span> <span class="t-muted">— Voir les episodes d\'un resultat</span><br>' +
       '<span class="t-accent t-bold">play</span> <span style="color:#888">&lt;ep_num&gt;</span> <span class="t-muted">— Resoudre et jouer un episode</span><br>' +
-      '<span class="t-accent t-bold">sources</span> <span class="t-muted">— Lister les 6 sources</span><br>' +
+      '<span class="t-accent t-bold">sources</span> <span class="t-muted">— Lister les 7 sources</span><br>' +
       '<span class="t-accent t-bold">stats</span> <span class="t-muted">— Stats du catalogue</span><br>' +
       '<span class="t-accent t-bold">clear</span> <span class="t-muted">— Nettoyer le terminal</span></div>',
     'term.searching': 'Recherche de',
@@ -273,7 +291,7 @@ function applyLang() {
     const val = i18n(key);
     if (val) el.setAttribute('placeholder', val);
   });
-  // Re-inject copy buttons because bar content may have shifted
+
   injectCopyButtons();
 }
 
@@ -284,7 +302,6 @@ function toggleLang() {
   applyLang();
 }
 
-// ── Copy buttons ──
 function injectCopyButtons() {
   document.querySelectorAll('.code-block').forEach(block => {
     const bar = block.querySelector('.code-bar');
@@ -309,7 +326,6 @@ function injectCopyButtons() {
   });
 }
 
-// ── Navigation ──
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('p-' + id);
@@ -345,7 +361,6 @@ function filterNav(q) {
   });
 }
 
-// ── Theme ──
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') !== 'light';
@@ -359,7 +374,6 @@ if (savedTheme) {
   document.documentElement.setAttribute('data-theme', savedTheme);
 }
 
-// ── Terminal ──
 const termOut = document.getElementById('termOut');
 const termIn = document.getElementById('termIn');
 let history = [], hi = -1, results = [], current_eps = null;
@@ -393,10 +407,10 @@ termIn.addEventListener('keydown', async function(e) {
       if (c === 'help') {
         tp(i18n('term.help.block') || ('<div style="line-height:1.8;margin:2px 0">' +
           '<span class="t-accent t-bold">help</span> <span class="t-muted">— Help</span><br>' +
-          '<span class="t-accent t-bold">search</span> <span style="color:#888">&lt;query&gt;</span> <span class="t-muted">— Search across 6 sources</span><br>' +
+          '<span class="t-accent t-bold">search</span> <span style="color:#888">&lt;query&gt;</span> <span class="t-muted">— Search across 7 sources</span><br>' +
           '<span class="t-accent t-bold">[num]</span> <span class="t-muted">— Show episodes of a result</span><br>' +
           '<span class="t-accent t-bold">play</span> <span style="color:#888">&lt;ep_num&gt;</span> <span class="t-muted">— Resolve and play an episode</span><br>' +
-          '<span class="t-accent t-bold">sources</span> <span class="t-muted">— List the 6 sources</span><br>' +
+          '<span class="t-accent t-bold">sources</span> <span class="t-muted">— List the 7 sources</span><br>' +
           '<span class="t-accent t-bold">stats</span> <span class="t-muted">— Catalog stats</span><br>' +
           '<span class="t-accent t-bold">clear</span> <span class="t-muted">— Clear the terminal</span></div>'));
       }
@@ -510,9 +524,8 @@ termIn.addEventListener('keydown', async function(e) {
 
 document.querySelector('.term-body')?.addEventListener('click', () => termIn.focus());
 
-// ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
-  // Store original English defaults so we can restore when switching back
+
   document.querySelectorAll('[data-i18n]').forEach(el => {
     if (!el.hasAttribute('data-i18n-default')) {
       el.setAttribute('data-i18n-default', el.children.length > 0 ? el.innerHTML : el.textContent);

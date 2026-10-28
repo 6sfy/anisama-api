@@ -17,7 +17,7 @@ def handle(handler, params):
     safe_url_js = json.dumps(url)
     html_page = f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{safe_title} — anisama</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; frame-src *; style-src 'unsafe-inline'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; frame-src http: https:; img-src http: https: data:; base-uri 'none'">
     <style>
     *{{margin:0;padding:0;box-sizing:border-box}}
     body{{background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;min-height:100vh}}
@@ -33,7 +33,15 @@ def handle(handler, params):
     <div class="p"><iframe src="{safe_url_attr}" allowfullscreen allow="autoplay;encrypted-media" referrerpolicy="no-referrer"></iframe></div>
     <div class="i"><span>Source: {html.escape(url[:60])}...</span><button onclick="navigator.clipboard.writeText({safe_url_js})">Copy</button></div>
     </body></html>"""
+    handler._csp = (
+        "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
+        "frame-src http: https:; img-src http: https: data:; "
+        "base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+    )
+    handler._cache_control = "no-store"
+    body = html_page.encode("utf-8")
     handler.send_response(200)
     handler.send_header("Content-Type", "text/html; charset=utf-8")
+    handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
-    handler.wfile.write(html_page.encode("utf-8"))
+    handler.wfile.write(body)

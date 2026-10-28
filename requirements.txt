@@ -5,4 +5,7 @@ beautifulsoup4>=4.12.0
 lxml>=4.9.0
 rapidfuzz>=3.0.0
 requests>=2.31.0
-playwright>=1.40.0
+# Playwright is OPTIONAL (only the historical MyFluneo / AnimoFlix fallback).
+# Its wheel + Chromium need ~500 MB — do not enable it on small containers:
+# the fast engine covers Anime-Sama and FRAnime with requests only.
+# playwright>=1.40.0

@@ -16,3 +16,58 @@ api_cache/
 .env.*
 !.env.example
 api.rar
+
+# generated episode link dumps
+*_liens.txt
+*_links.txt
+episode_links*.txt
+
+# secrets / credentials
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.*
+credentials.*
+cookies.txt
+
+# logs / temporary files / backups
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# sqlite sidecars / local databases
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# generated media / playlists
+*.m3u8
+*.mp4
+*.mkv
+
+# OS / editors / virtualenvs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.venv/
+venv/
+env/
+node_modules/
+
+# test / coverage artifacts
+.coverage
+coverage.xml
+htmlcov/

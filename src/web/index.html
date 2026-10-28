@@ -13,7 +13,6 @@
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 <button class="mobile-toggle" id="menuBtn" onclick="toggleSidebar()">☰</button>
 
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">A</div>
@@ -42,10 +41,11 @@
     <div class="nav-group">
       <div class="nav-group-header" onclick="toggleGroup(this)" data-i18n="nav.sources">Sources<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
       <ul class="nav-group-items">
-        <li><a class="nav-group-item" href="#" onclick="return showPage('sources',this)" data-i18n="nav.all_sources">All 6 Sources</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('sources',this)" data-i18n="nav.all_sources">All 7 Sources</a></li>
         <li><a class="nav-group-item" href="#" onclick="return showPage('animesama',this)">Anime-Sama</a></li>
         <li><a class="nav-group-item" href="#" onclick="return showPage('myfluneo',this)">MyFluneo <span class="badge new">NEW</span></a></li>
         <li><a class="nav-group-item" href="#" onclick="return showPage('voiranime',this)">Voiranime</a></li>
+        <li><a class="nav-group-item" href="#" onclick="return showPage('franime',this)">FRAnime</a></li>
         <li><a class="nav-group-item" href="#" onclick="return showPage('animesultra',this)">AnimesUltra</a></li>
         <li><a class="nav-group-item" href="#" onclick="return showPage('frenchanime',this)">French-Anime</a></li>
         <li><a class="nav-group-item" href="#" onclick="return showPage('animoflix',this)">AnimoFlix</a></li>
@@ -82,24 +82,22 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <span id="langLabel">EN</span>
     </button>
-    <span class="sidebar-ver">v1.1.0</span>
+    <span class="sidebar-ver">v2.0.1</span>
   </div>
 </aside>
 
-<!-- MAIN CONTENT -->
 <main class="main">
   <div class="content">
 
-    <!-- PAGE: Intro -->
     <div id="p-intro" class="page active">
       <div class="hero">
-        <div class="hero-label"><span class="dot"></span>anisama v1.1.0</div>
+        <div class="hero-label"><span class="dot"></span>anisama v2.0.1</div>
         <h1 data-i18n="hero.intro.title">anisama</h1>
-        <p data-i18n="hero.intro.desc">CLI Anime VOSTFR/VF. Search, stream and download your anime from <strong style="color:var(--color-accent)">6 French sources</strong> — from your terminal, or via the <strong style="color:var(--color-accent)">central API</strong>.</p>
+        <p data-i18n="hero.intro.desc">CLI Anime VOSTFR/VF. Search, stream and download your anime from <strong style="color:var(--color-accent)">7 French sources</strong> — from your terminal, or via the <strong style="color:var(--color-accent)">central API</strong>.</p>
       </div>
       <div class="grid">
-        <div class="card"><div class="icon">🌐</div><h3 data-i18n="card.6_sources">6 French Sources</h3><p data-i18n="card.6_sources.desc">Anime-Sama, MyFluneo, Voiranime, AnimesUltra, French-Anime & AnimoFlix.</p></div>
-        <div class="card"><div class="icon">🎯</div><h3 data-i18n="card.smart_search">Smart Search</h3><p data-i18n="card.smart_search.desc">Realistic fuzzy matching (rapidfuzz), title dedup, 6 cascading sources.</p></div>
+        <div class="card"><div class="icon">🌐</div><h3 data-i18n="card.6_sources">7 French Sources</h3><p data-i18n="card.6_sources.desc">Anime-Sama, Voiranime, FRAnime, MyFluneo, AnimesUltra, French-Anime & AnimoFlix.</p></div>
+        <div class="card"><div class="icon">🎯</div><h3 data-i18n="card.smart_search">Smart Search</h3><p data-i18n="card.smart_search.desc">Realistic fuzzy matching (rapidfuzz), title dedup, 7 cascading sources.</p></div>
         <div class="card"><div class="icon">⚡</div><h3 data-i18n="card.api">Centralized API</h3><p data-i18n="card.api.desc">Server-side scraping + resolution. The client only consumes clean JSON.</p></div>
         <div class="card"><div class="icon">▶️</div><h3 data-i18n="card.stream">Stream & Download</h3><p data-i18n="card.stream.desc">mpv, VLC, IINA, MoonPlayer, ImPlay or direct download.</p></div>
         <div class="card"><div class="icon">📋</div><h3 data-i18n="card.history">History & Continue</h3><p data-i18n="card.history.desc">Resume watching at the exact episode, cross-source.</p></div>
@@ -107,7 +105,6 @@
       </div>
     </div>
 
-    <!-- PAGE: Quick Start -->
     <div id="p-quick" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Getting Started</div><h1 data-i18n="hero.quick.title">Quick Start</h1><p data-i18n="hero.quick.desc">Install and get running in 30 seconds.</p></div>
       <div class="code-block">
@@ -126,7 +123,6 @@
       <p data-i18n="quick.tui">The interactive TUI launches automatically. <kbd>↑</kbd><kbd>↓</kbd> to navigate, <kbd>Enter</kbd> to confirm, <kbd>Esc</kbd> to go back.</p>
     </div>
 
-    <!-- PAGE: Install -->
     <div id="p-install" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Getting Started</div><h1 data-i18n="hero.install.title">Installation</h1><p data-i18n="hero.install.desc">PyPI or source — your choice.</p></div>
       <h2 data-i18n="install.pypi">From PyPI</h2>
@@ -148,7 +144,6 @@
       </div></div>
     </div>
 
-    <!-- PAGE: Architecture -->
     <div id="p-arch" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Architecture</div><h1 data-i18n="hero.arch.title">Project Structure</h1><p data-i18n="hero.arch.desc">Modular codebase: CLI client + API server.</p></div>
 
@@ -181,7 +176,6 @@
       </div>
     </div>
 
-    <!-- PAGE: API Reference -->
     <div id="p-api-ref" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>API v2</div><h1 data-i18n="hero.api.title">API Reference</h1><p data-i18n="hero.api.desc">All JSON endpoints from the central API.</p></div>
 
@@ -193,7 +187,7 @@
         <table>
           <thead><tr><th data-i18n="api.method">Method</th><th data-i18n="api.endpoint">Endpoint</th><th data-i18n="api.description">Description</th></tr></thead>
           <tbody>
-            <tr><td><code>GET</code></td><td><code>/api/v2/search?q=QUERY</code></td><td>Search across all 6 sources. Returns deduped results with real fuzzy scores (0-100).</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/search?q=QUERY</code></td><td>Search across all 7 sources. Returns deduped results with real fuzzy scores (0-100).</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/catalog?source=all&page=1&limit=50&q=TEXT</code></td><td>Browse the full catalog with filters, pagination and text search.</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/stats</code></td><td>Global stats: counts by source, top genres, year range.</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/episodes?source=SRC&slug=SLUG</code></td><td>Get episode list for an anime. Supports: anime-sama, myfluneo, voiranime, animesultra, frenchanime, animoflix.</td></tr>
@@ -219,20 +213,19 @@
       </div></div>
     </div>
 
-    <!-- PAGE: All Sources -->
     <div id="p-sources" class="page">
-      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1 data-i18n="hero.sources.title">6 French Sources</h1><p data-i18n="hero.sources.desc">All platforms integrated into the API and CLI.</p></div>
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1 data-i18n="hero.sources.title">7 French Sources</h1><p data-i18n="hero.sources.desc">All platforms integrated into the API and CLI.</p></div>
       <div class="src-grid">
         <div class="src-card"><div class="s-name">Anime-Sama</div><div class="s-desc" data-i18n="sources.animesama.desc">Main source. ~1500 entries. Embed players: vidmoly, sendvid, sibnet, smoothpre, streamwish, oneupload.</div><span class="s-tag" data-i18n="sources.animesama.tag">Main</span></div>
         <div class="src-card"><div class="s-name">MyFluneo</div><div class="s-desc" data-i18n="sources.myfluneo.desc">~5400 entries. Next.js SPA. Playwright scraping. Hosts: vidmoly, streamtape.</div><span class="s-tag" data-i18n="sources.myfluneo.tag">NEW</span></div>
         <div class="src-card"><div class="s-name">Voiranime</div><div class="s-desc" data-i18n="sources.voiranime.desc">~960 entries. Internal video resolution.</div><span class="s-tag" data-i18n="sources.voiranime.tag">Secondary</span></div>
+        <div class="src-card"><div class="s-name">FRAnime</div><div class="s-desc" data-i18n="sources.franime.desc">Public JSON API. Fast engine, 0-based indexes, direct watch2 resolution.</div><span class="s-tag" data-i18n="sources.franime.tag">API</span></div>
         <div class="src-card"><div class="s-name">AnimesUltra</div><div class="s-desc" data-i18n="sources.animesultra.desc">~2600 entries via sitemap XML. Hosts: vidmoly, sendvid, sibnet, vidstream.</div><span class="s-tag" data-i18n="sources.animesultra.tag">NEW</span></div>
         <div class="src-card"><div class="s-name">French-Anime</div><div class="s-desc" data-i18n="sources.frenchanime.desc">Hosts: luluvdo, vidmoly, vidara. Scraped via homepage.</div><span class="s-tag" data-i18n="sources.frenchanime.tag">NEW</span></div>
         <div class="src-card"><div class="s-name">AnimoFlix</div><div class="s-desc" data-i18n="sources.animoflix.desc">Hosts: sendvid, sibnet. Playwright fallback for JS-rendered episodes.</div><span class="s-tag" data-i18n="sources.animoflix.tag">NEW</span></div>
       </div>
     </div>
 
-    <!-- PAGE: Anime-Sama -->
     <div id="p-animesama" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>Anime-Sama</h1><p data-i18n="hero.animesama.desc">Main source VOSTFR/VF.</p></div>
       <p data-i18n="animesama.p1">Anime-Sama is the main source with <strong>~1500 entries</strong>. The site uses external embed players:</p>
@@ -247,13 +240,21 @@
       <p data-i18n="animesama.p2">The multiple mirror system enables automatic fallback. Speed-testing picks the fastest mirror. <code>Scan</code> / <code>Manhwa</code> / <code>Webtoon</code> seasons are automatically filtered.</p>
     </div>
 
-    <!-- PAGE: Voiranime -->
     <div id="p-voiranime" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>Voiranime</h1><p data-i18n="hero.voiranime.desc">Secondary source VOSTFR/VF.</p></div>
       <p data-i18n="voiranime.p1">Voiranime provides an alternative catalog with its own internal video resolution system. <strong>~960 entries</strong> merged into the main catalog via <code>alt_source</code>.</p>
     </div>
 
-    <!-- PAGE: MyFluneo -->
+    <div id="p-franime" class="page">
+      <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>FRAnime</h1><p data-i18n="hero.franime.desc">Public JSON API with VOSTFR/VF.</p></div>
+      <p data-i18n="franime.p1">FRAnime (franime.fr) exposes a public JSON API (<code>api.franime.fr</code>). The fast engine queries it directly: no HTML scraping, no Playwright.</p>
+      <ul>
+        <li data-i18n="franime.li1"><strong>0-based episode indexes</strong> — fixes the old 1-based <code>404 Aucun lecteur disponible</code>.</li>
+        <li data-i18n="franime.li2"><strong>Direct watch2 resolution</strong> — returns the embed URL used by the player.</li>
+        <li data-i18n="franime.li3"><strong>VOSTFR/VF</strong> — language selection via <code>&amp;lang=vo|vf</code>.</li>
+      </ul>
+    </div>
+
     <div id="p-myfluneo" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>MyFluneo <span style="background:rgba(34,197,94,.12);color:#22c55e;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em">NEW</span></h1><p data-i18n="hero.myfluneo.desc">~5400 French entries.</p></div>
       <p data-i18n="myfluneo.p1">MyFluneo (myfluneo.eu) is a <strong>new French source</strong> with <strong>~5400 entries</strong> VOSTFR/VF. The site is built with Next.js:</p>
@@ -264,7 +265,6 @@
       <p data-i18n="myfluneo.p2">Server-side scraped with <strong>Playwright</strong> (Next.js RSC). Episodes and resolutions are pre-cacheable.</p>
     </div>
 
-    <!-- PAGE: AnimesUltra -->
     <div id="p-animesultra" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>AnimesUltra</h1><p data-i18n="hero.animesultra.desc">~2600 entries via XML sitemap.</p></div>
       <p data-i18n="animesultra.p1">AnimesUltra (ww.animesultra.org) uses a <strong>sitemap.xml</strong> to expose its full catalog (~2600 URLs).</p>
@@ -274,7 +274,6 @@
       <p data-i18n="animesultra.p2">Resolution uses the <code>data-embed</code> attribute on server buttons. No dynamic JS required for the catalog.</p>
     </div>
 
-    <!-- PAGE: French-Anime -->
     <div id="p-frenchanime" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>French-Anime</h1><p data-i18n="hero.frenchanime.desc">Homepage scraping.</p></div>
       <p data-i18n="frenchanime.p1">French-Anime (french-anime.com) lists recent animes on its homepage.</p>
@@ -285,7 +284,6 @@
       <p data-i18n="frenchanime.p2">Resolution goes through iframe extraction from the episode page.</p>
     </div>
 
-    <!-- PAGE: AnimoFlix -->
     <div id="p-animoflix" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Sources</div><h1>AnimoFlix</h1><p data-i18n="hero.animoflix.desc">JS-heavy site with Playwright fallback.</p></div>
       <p data-i18n="animoflix.p1">AnimoFlix (animoflix.to) is a modern site with JavaScript rendering:</p>
@@ -295,7 +293,6 @@
       <p data-i18n="animoflix.p2">The catalog is statically scraped via <code>/catalogue/</code>. Episodes use a <strong>Playwright fallback</strong> if static HTML is not enough. Server tabs are simulated via automated clicks.</p>
     </div>
 
-    <!-- PAGE: CLI -->
     <div id="p-cli" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>CLI</div><h1 data-i18n="hero.cli.title">Commands</h1><p data-i18n="hero.cli.desc">All available flags.</p></div>
       <div class="table-wrap">
@@ -322,7 +319,6 @@
       </div></div>
     </div>
 
-    <!-- PAGE: Config -->
     <div id="p-config" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>CLI</div><h1 data-i18n="hero.config.title">Settings</h1><p data-i18n="hero.config.desc">Configurable options.</p></div>
       <p data-i18n="config.p1">Edit <code>data/settings.json</code> or the TUI Settings menu.</p>
@@ -342,12 +338,11 @@
       </div>
     </div>
 
-    <!-- PAGE: Terminal -->
     <div id="p-terminal" class="page">
       <div class="hero">
         <div class="hero-label"><span class="dot live"></span>Live Demo <span style="background:rgba(34,197,94,.12);color:#22c55e;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em">LIVE</span></div>
         <h1 data-i18n="hero.terminal.title">Web Terminal</h1>
-        <p data-i18n="hero.terminal.desc">Search and explore animes live. Real API calls across all 6 sources.</p>
+        <p data-i18n="hero.terminal.desc">Search and explore animes live. Real API calls across all 7 sources.</p>
       </div>
       <div class="term">
         <div class="term-bar">
@@ -356,7 +351,7 @@
         </div>
         <div class="term-body" id="termOut">
           <div class="l t-muted" data-i18n="term.welcome1">anisama Web Terminal — <span class="t-accent">help</span> for commands.</div>
-          <div class="l t-muted" data-i18n="term.welcome2">Sources: Anime-Sama · MyFluneo · Voiranime · AnimesUltra · French-Anime · AnimoFlix</div>
+          <div class="l t-muted" data-i18n="term.welcome2">Sources: Anime-Sama · FRAnime · MyFluneo · Voiranime · AnimesUltra · French-Anime · AnimoFlix</div>
         </div>
         <div class="term-in">
           <span class="prompt">anisama@web:~$</span>
@@ -365,7 +360,6 @@
       </div>
     </div>
 
-    <!-- PAGE: Terminal Commands -->
     <div id="p-cmds" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Live Demo</div><h1 data-i18n="hero.cmds.title">Terminal Commands</h1></div>
       <div class="table-wrap">
@@ -373,10 +367,10 @@
           <thead><tr><th data-i18n="cmds.command">Command</th><th data-i18n="cmds.description">Description</th><th data-i18n="cmds.example">Example</th></tr></thead>
           <tbody>
             <tr><td><code>help</code></td><td data-i18n="cmds.help">Show help</td><td>help</td></tr>
-            <tr><td><code>search &lt;query&gt;</code></td><td data-i18n="cmds.search">Search across 6 sources</td><td>search naruto</td></tr>
+            <tr><td><code>search &lt;query&gt;</code></td><td data-i18n="cmds.search">Search across 7 sources</td><td>search naruto</td></tr>
             <tr><td><code>[num]</code></td><td data-i18n="cmds.num">Show episodes of a result</td><td>0</td></tr>
             <tr><td><code>play &lt;ep&gt;</code></td><td data-i18n="cmds.play">Resolve video URL + open player</td><td>play 1</td></tr>
-            <tr><td><code>sources</code></td><td data-i18n="cmds.sources">List the 6 sources</td><td>sources</td></tr>
+            <tr><td><code>sources</code></td><td data-i18n="cmds.sources">List the 7 sources</td><td>sources</td></tr>
             <tr><td><code>stats</code></td><td data-i18n="cmds.stats">Catalog stats</td><td>stats</td></tr>
             <tr><td><code>clear</code></td><td data-i18n="cmds.clear">Clear the terminal</td><td>clear</td></tr>
           </tbody>
@@ -384,22 +378,48 @@
       </div>
     </div>
 
-    <!-- PAGE: Troubleshooting -->
     <div id="p-trouble" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Support</div><h1 data-i18n="hero.trouble.title">Troubleshooting</h1></div>
-      <div class="ts-item"><h3 data-i18n="trouble.no_results">No results</h3><p data-i18n="trouble.no_results.desc">Search uses fuzzy matching (rapidfuzz). Try shorter terms. The search cascades through 6 sources.</p></div>
+      <div class="ts-item"><h3 data-i18n="trouble.no_results">No results</h3><p data-i18n="trouble.no_results.desc">Search uses fuzzy matching (rapidfuzz). Try shorter terms. The search cascades through 7 sources.</p></div>
       <div class="ts-item"><h3 data-i18n="trouble.player">Player won't launch</h3><p data-i18n="trouble.player.desc">Install mpv or VLC. Use <code>anisama -p vlc "title"</code> to specify the player.</p></div>
       <div class="ts-item"><h3 data-i18n="trouble.windows">Windows import error</h3><p data-i18n="trouble.windows.desc">Run <code>python -m src</code> from the root, or <code>pip install -e .</code> then <code>anisama</code>.</p></div>
       <div class="ts-item"><h3 data-i18n="trouble.domain">Blocked domain</h3><p data-i18n="trouble.domain.desc">Run <code>anisama -U</code> to force a refresh. Auto-detection of active domains.</p></div>
       <div class="ts-item"><h3 data-i18n="trouble.resolve">API returns "Could not resolve"</h3><p data-i18n="trouble.resolve.desc">Some sources use Playwright (MyFluneo, AnimoFlix). Make sure Chromium is installed on the API server.</p></div>
     </div>
 
-    <!-- PAGE: Changelog -->
     <div id="p-changelog" class="page">
       <div class="hero"><div class="hero-label"><span class="dot"></span>Updates</div><h1 data-i18n="hero.changelog.title">Changelog</h1></div>
 
       <div class="cl-entry">
-        <div class="cl-head"><span class="cl-ver">v1.1.0</span><span class="cl-latest" data-i18n="changelog.v110.latest">Latest</span><span class="cl-date">2026-07-18</span></div>
+        <div class="cl-head"><span class="cl-ver">v2.0.1</span><span class="cl-latest" data-i18n="changelog.v201.latest">Latest</span><span class="cl-date">2026-10-28</span></div>
+        <div class="cl-body">
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v201.new1"><strong>Voiranime</strong> : fixed and enabled by default (new <code>/&lt;slug&gt;/</code> URLs, saga pages, VF/VOSTFR, direct stream resolution).</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v201.new2"><strong>Anime-Sama resolution</strong> : selects the best resolvable mirror (ansembed/embed4me) and returns a direct <code>m3u8</code> stream.</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v201.new3"><strong>404 page</strong> for mistyped URLs; API routes still return JSON errors.</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v201.new4"><strong>Security</strong> : tiered rate limiting, opaque errors with <code>request_id</code>, HSTS/CSP, CORS whitelist, optional Bearer token, <code>robots.txt</code>.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx1"><strong>Anime-Sama</strong> : scan/one-shot seasons no longer pollute episode numbering.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx2"><strong>Episode cache</strong> : resolving one episode stores the full list without erasing already-resolved URLs.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx3"><strong>Sources</strong> : FRAnime was missing from the docs; all 7 sources are now listed and documented.</span></div>
+          <div class="cl-item"><span class="cl-tag up">UP</span><span class="cl-text" data-i18n="changelog.v201.up1"><strong>Light mode</strong> : warm cream theme with readable code blocks, tables and terminal.</span></div>
+        </div>
+      </div>
+
+      <div class="cl-entry">
+        <div class="cl-head"><span class="cl-ver">v2.0.0</span><span class="cl-date">2026-10-23</span></div>
+        <div class="cl-body">
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v200.new1"><strong>Fast engine</strong> : Anime-Sama + FRAnime via direct API extraction (10-50x faster, no BeautifulSoup, no Playwright).</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v200.new2">New endpoints : <code>/api/v2/seasons</code>, <code>/api/v2/hosts</code>, <code>/api/v2/engine</code>, <code>/health</code>.</span></div>
+          <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v200.new3">Parallel API/local resolution with cache write-back and <code>fresh=1</code> re-resolve for dead URLs.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v200.fx1"><strong>Scores clamped to 0-100</strong> : no more percentages above 100% in search results.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v200.fx2"><strong>Playback</strong> : the CLI resolves embed URLs (uqload, etc.) to a direct stream before playback; watch2 pages fall back to the browser.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v200.fx3"><strong>Pterodactyl</strong> : listen on <code>SERVER_PORT</code>, automatic fallback to <code>0.0.0.0</code> when <code>HOST</code> is not a local interface.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v200.fx4"><strong>Web docs</strong> : fixed navigation and accessibility layer (<code>a11y.js</code> loaded after <code>script.js</code>).</span></div>
+          <div class="cl-item"><span class="cl-tag up">UP</span><span class="cl-text" data-i18n="changelog.v200.up1">Playwright is now optional: lighter install, no more full disks on small containers.</span></div>
+        </div>
+      </div>
+
+      <div class="cl-entry">
+        <div class="cl-head"><span class="cl-ver">v1.1.0</span><span class="cl-date">2026-07-18</span></div>
         <div class="cl-body">
           <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v110.new1"><strong>4 new sources</strong> : MyFluneo (~5400 entries), AnimesUltra (~2600), French-Anime, AnimoFlix. Total : <strong>6 sources</strong>.</span></div>
           <div class="cl-item"><span class="cl-tag ny">NEW</span><span class="cl-text" data-i18n="changelog.v110.new2"><strong>Central API v2</strong> — modular Python server with server-side scraping. The client only consumes clean JSON.</span></div>
@@ -424,5 +444,6 @@
 </main>
 
 <script src="script.js"></script>
+<script src="a11y.js"></script>
 </body>
 </html>

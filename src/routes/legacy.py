@@ -1,5 +1,6 @@
 from src.helpers import send_json, is_safe_external_url
 from src.routes.search import do_search_internal
+from src.routes.sources import advertised_sources
 from anisama.resolver import resolve_url
 
 
@@ -12,9 +13,7 @@ def handle(handler, path, params):
         _resolve(handler, params)
     elif path == "/api/sources":
         send_json(handler, {"sources": [
-            {"id": "anime-sama", "name": "Anime-Sama", "lang": "VOSTFR/VF", "url": "https://anime-sama.to"},
-            {"id": "voiranime", "name": "Voiranime", "lang": "VOSTFR/VF", "url": "https://voiranime.rip"},
-            {"id": "myfluneo", "name": "MyFluneo", "lang": "VOSTFR/VF", "url": "https://myfluneo.eu"},
+            {**d, "lang": "VOSTFR/VF"} for d in advertised_sources()
         ]})
 
 

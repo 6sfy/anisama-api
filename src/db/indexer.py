@@ -101,7 +101,10 @@ class BackgroundIndexer:
                 all_eps = []
                 abs_offset = 0
                 from concurrent.futures import ThreadPoolExecutor, as_completed
+                skip = ("/scan", "scan_", "/manhwa", "/webtoon", "/manhua", "/manga", "/novel")
                 for season in seasons:
+                    if any(h in (season.get("url") or "").lower() for h in skip):
+                        continue
                     eps = get_episodes(season["url"])
                     for e in eps:
                         all_eps.append({

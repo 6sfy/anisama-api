@@ -2,12 +2,24 @@ from src.helpers import send_json, get_param
 from anisama import cache as cache_mod
 
 
+def _int_param(params, key, default):
+    raw = get_param(params, key, str(default))
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
 def handle(handler, params):
     source_filter = get_param(params, "source", "all").lower()
-    page = int(get_param(params, "page", "1") or "1")
-    limit = int(get_param(params, "limit", "50") or "50")
+    page = _int_param(params, "page", 1)
+    limit = _int_param(params, "limit", 50)
     sort = get_param(params, "sort", "title").lower()
     q = get_param(params, "q", "").lower()
+
+    if page is None or limit is None:
+        send_json(handler, {"error": "invalid_page_or_limit"}, 400)
+        return
 
     if page < 1:
         page = 1

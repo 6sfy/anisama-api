@@ -1,22 +1,54 @@
-from rapidfuzz import fuzz
+import logging
 import time
 
-from src.helpers import send_json, norm, base_title
 from anisama import cache as cache_mod
 from anisama.search import _calc_score
+
+from src import fast_engine
+from src.helpers import base_title, norm, send_json
+
+logger = logging.getLogger("anisama-api")
 
 _alt_cache = {}
 _alt_cache_time = 0
 
 
+def _merge_alt_result(results, r):
+    """Fusionne un résultat « alt » (moteur ou scraper) dans le dict de résultats."""
+    base_key = norm(r["title"])
+    if not base_key:
+        return
+    score = fast_engine.clamp_score(r.get("score"))
+    if base_key in results:
+        existing = results[base_key]
+        if score > existing["score"]:
+            existing["score"] = score
+            existing["link"] = r["link"]
+            existing["slug"] = r.get("slug", "")
+            existing["primary_source"] = r["source"]
+        if r["source"] not in existing.get("sources", []):
+            existing.setdefault("sources", []).append(r["source"])
+    else:
+        results[base_key] = {
+            "title": r["title"],
+            "link": r["link"],
+            "slug": r.get("slug", ""),
+            "score": score,
+            "sources": [r["source"]],
+            "primary_source": r["source"],
+            "genres": [],
+            "langs": ["vostfr"],
+        }
+
+
 def _get_alt_results(q):
-    global _alt_cache, _alt_cache_time
+    global _alt_cache_time
     now = time.time()
     if now - _alt_cache_time > 900:
         try:
             from anisama.scraper.animesultra import animesultra_catalog
-            from anisama.scraper.frenchanime import frenchanime_catalog
             from anisama.scraper.animoflix import animoflix_catalog
+            from anisama.scraper.frenchanime import frenchanime_catalog
             _alt_cache["animesultra"] = animesultra_catalog()
             _alt_cache["frenchanime"] = frenchanime_catalog()
             _alt_cache["animoflix"] = animoflix_catalog()
@@ -27,13 +59,15 @@ def _get_alt_results(q):
     out = []
     try:
         from anisama.scraper.animesultra import animesultra_search
-        from anisama.scraper.frenchanime import frenchanime_search
         from anisama.scraper.animoflix import animoflix_search
         from anisama.scraper.franime import franime_search
+        from anisama.scraper.frenchanime import frenchanime_search
         out.extend(animesultra_search(q, _alt_cache.get("animesultra")))
         out.extend(frenchanime_search(q, _alt_cache.get("frenchanime")))
         out.extend(animoflix_search(q, _alt_cache.get("animoflix")))
-        out.extend(franime_search(q))
+        if not fast_engine.enabled():
+            # moteur actif -> franime déjà couvert par le fast engine (catalogue en cache)
+            out.extend(franime_search(q))
     except Exception:
         pass
     return out
@@ -46,7 +80,6 @@ def handle(handler, params):
         return
 
     cat = cache_mod.load_catalog()
-    qn = norm(q)
     results = {}  # key: normalized base title -> merged result
 
     for entry in cat:
@@ -111,29 +144,15 @@ def handle(handler, params):
             }
 
     for r in _get_alt_results(q):
-        base_key = norm(r["title"])
-        if not base_key:
-            continue
-        if base_key in results:
-            existing = results[base_key]
-            if r["score"] > existing["score"]:
-                existing["score"] = r["score"]
-                existing["link"] = r["link"]
-                existing["slug"] = r.get("slug", "")
-                existing["primary_source"] = r["source"]
-            if r["source"] not in existing.get("sources", []):
-                existing.setdefault("sources", []).append(r["source"])
-        else:
-            results[base_key] = {
-                "title": r["title"],
-                "link": r["link"],
-                "slug": r.get("slug", ""),
-                "score": r["score"],
-                "sources": [r["source"]],
-                "primary_source": r["source"],
-                "genres": [],
-                "langs": ["vostfr"],
-            }
+        _merge_alt_result(results, r)
+
+    # Fast engine (anime-sama live + franime, catalogue en cache) — prioritaire
+    if fast_engine.enabled():
+        try:
+            for r in fast_engine.fast_search(q):
+                _merge_alt_result(results, r)
+        except Exception as exc:
+            logger.warning("fast_search a échoué, pipeline historique seul: %s", exc)
 
     out = sorted(results.values(), key=lambda x: (-x["score"], x["title"]))
     send_json(handler, {"query": q, "count": len(out), "results": out[:20]})
