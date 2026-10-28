@@ -72,6 +72,14 @@ const I18N = {
     'api.example_search': 'Example : Search',
     'api.example_search.comment': '# Retourne des resultats dedup avec scores realistes',
     'api.example_catalog': 'Example : Catalog',
+    'api.rate_limits': 'Limites de débit',
+    'api.rate_limits.desc': 'Fenêtre glissante par IP de 60 secondes, avec des budgets indépendants par classe d\'endpoint.',
+    'api.rate_class': 'Classe',
+    'api.rate_endpoints': 'Endpoints',
+    'api.rate_limit': 'Limite',
+    'api.rate_headers': 'Chaque réponse inclut <code>RateLimit-Limit</code>, <code>RateLimit-Remaining</code> et <code>RateLimit-Reset</code>. Un <code>429</code> envoie aussi <code>Retry-After</code>.',
+    'api.rate_429_comment': '# HTTP 429 — trop de requêtes',
+    'api.rate_config': 'Configurable via <code>ANISAMA_RATE_LIMIT_GLOBAL</code>, <code>ANISAMA_RATE_LIMIT_HEAVY</code>, <code>ANISAMA_RATE_LIMIT_RESOLVE</code> et <code>ANISAMA_RATE_LIMIT_WINDOW</code> (<code>0</code> désactive un palier). Derrière Cloudflare, mettre <code>ANISAMA_TRUST_PROXY=1</code>.',
     'hero.sources.title': '7 Sources FR',
     'hero.sources.desc': 'Toutes les plateformes integrees dans l\'API et le CLI.',
     'sources.animesama.desc': 'Source principale. ~1500 entrees. Lecteurs embed : vidmoly, sendvid, sibnet, smoothpre, streamwish, oneupload.',
@@ -183,6 +191,7 @@ const I18N = {
     'changelog.v201.fx1': '<strong>Anime-Sama</strong> : les scans/one-shots ne polluent plus la numérotation des épisodes.',
     'changelog.v201.fx2': '<strong>Cache épisodes</strong> : résoudre un épisode enregistre la liste complète sans écraser les URLs déjà résolues.',
     'changelog.v201.fx3': '<strong>Sources</strong> : FRAnime manquait dans la doc ; les 7 sources sont maintenant listées et documentées.',
+    'changelog.v201.fx4': '<strong>Lecture HLS</strong> : les tokens <code>m3u8</code> liés à une autre IP/ASN basculent sur l\'iframe ansembed dans <code>/player</code>.',
     'changelog.v201.up1': '<strong>Mode clair</strong> : thème crème avec blocs de code, tableaux et terminal lisibles.',
     'changelog.v200.new1': '<strong>Fast engine</strong> : Anime-Sama + FRAnime via extraction directe des APIs (10-50x plus rapide, sans BeautifulSoup ni Playwright).',
     'changelog.v200.new2': 'Nouveaux endpoints : <code>/api/v2/seasons</code>, <code>/api/v2/hosts</code>, <code>/api/v2/engine</code>, <code>/health</code>.',
@@ -425,8 +434,8 @@ termIn.addEventListener('keydown', async function(e) {
         const resLabel = i18n('term.results') || 'result(s):';
         tp('<span class="t-green">' + items.length + ' ' + resLabel + '</span>');
         items.forEach((r, i) => {
-          const srcs = (r.sources || []).join(',');
-          tp('&nbsp; <span class="t-num">[' + i + ']</span> ' + esc(r.title) + ' <span class="t-muted">(' + (r.primary_source || '?') + ', ' + srcs + ')</span>');
+          const srcList = [...new Set([r.primary_source, ...(r.sources || [])].filter(Boolean))];
+          tp('&nbsp; <span class="t-num">[' + i + ']</span> ' + esc(r.title) + ' <span class="t-muted">(' + srcList.join(', ') + ')</span>');
         });
         tp('<span class="t-muted">' + (i18n('term.pick_num') || 'Type <span class="t-accent">[num]</span> to view episodes.') + '</span>');
       }
@@ -465,7 +474,7 @@ termIn.addEventListener('keydown', async function(e) {
         }
       }
       else if (c === 'play' && current_eps && a.length) {
-        const ep_num = parseInt(a[0]);
+        const ep_num = parseInt(String(a[0]).replace(/\D+/g, ''), 10);
         if (isNaN(ep_num)) { tp('<span class="t-red">' + (i18n('term.usage_play') || 'Usage: play &lt;episode_number&gt;') + '</span>'); return; }
         tp('<span class="t-muted">' + (i18n('term.resolving') || 'Resolving EP') + ep_num + '...</span>');
         try {

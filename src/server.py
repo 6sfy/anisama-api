@@ -197,6 +197,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         self._status_code = 200
         self._csp = None
         self._cache_control = "no-store"
+        self._referrer_policy = "no-referrer"
         self._rate_limit = None
         super().__init__(*args, directory=str(STATIC_DIR), **kwargs)
 
@@ -218,7 +219,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header("Access-Control-Max-Age", "600")
 
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Referrer-Policy", self._referrer_policy)
         self.send_header("X-Frame-Options", "SAMEORIGIN")
         self.send_header("Strict-Transport-Security",
                          "max-age=31536000; includeSubDomains; preload")

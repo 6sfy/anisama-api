@@ -3,7 +3,8 @@ import re
 import time
 
 from src.helpers import (send_json, send_internal_error, is_safe_external_url,
-                         playwright_available)
+                         playwright_available, extract_media_from_url,
+                         is_media_url, media_type)
 from src.db.models import get_anime_episodes, save_episodes
 from src import fast_engine
 
@@ -63,14 +64,18 @@ def _to_direct(result):
     try:
         direct = resolve_url(result["url"])
     except Exception:
-        return result
-    if direct and direct.get("url") and direct.get("type") not in (None, "raw"):
-        return direct
+        direct = None
+    if direct and is_media_url(direct.get("url")):
+        return {"url": direct["url"],
+                "type": media_type(direct["url"]) or direct.get("type", "embed")}
+    # Le resolver peut renvoyer un tracker (staticmoly) au lieu du m3u8 :
+    # extraire le média depuis l'iframe elle-même.
+    media = extract_media_from_url(result["url"])
+    if media:
+        return {"url": media, "type": media_type(media) or "embed"}
     # Sibnet & co. ne se résolvent pas sans navigateur : l'URL reste l'iframe
     # du lecteur, donc « embed » (jouable dans /player), pas « raw ».
-    if result.get("url") and result.get("type") == "raw":
-        return {**result, "type": "embed"}
-    return result
+    return {**result, "type": "embed"}
 
 
 def handle_resolve(handler, params):
@@ -105,6 +110,10 @@ def handle_resolve(handler, params):
         else:
             from anisama.resolver import resolve_url
             result = resolve_url(url)
+            if result and not is_media_url(result.get("url")):
+                media = extract_media_from_url(url)
+                if media:
+                    result = {"url": media, "type": media_type(media) or "embed"}
     except Exception as exc:
         send_internal_error(handler, exc, logger, "resolve")
         return
@@ -192,7 +201,13 @@ def handle_resolve_episode(handler, params):
         if eps:
             for ep in eps:
                 if ep.get("number") == num and ep.get("resolved_url"):
-                    ttl = RESOLVED_TTL.get(ep.get("resolved_type", ""), DEFAULT_TTL)
+                    cached_type = ep.get("resolved_type", "")
+                    if cached_type in ("mp4", "m3u8", "webm", "mkv") \
+                            and not is_media_url(ep["resolved_url"]):
+                        logger.info("Ignoring non-media cached %s URL for %s/%s EP%s",
+                                    cached_type, source, slug, num)
+                        continue
+                    ttl = RESOLVED_TTL.get(cached_type, DEFAULT_TTL)
                     resolved_at = ep.get("resolved_at") or 0
                     if time.time() - resolved_at <= ttl:
                         rtype = ep.get("resolved_type", "")
@@ -218,7 +233,8 @@ def handle_resolve_episode(handler, params):
             r = fast_engine.fast_resolve(source, slug, num,
                                          season=season if source == "franime" else 1,
                                          lang=lang)
-            if r and r.get("url") and is_safe_external_url(r["url"], max_len=16384):
+            if r and r.get("url") and is_safe_external_url(r["url"], max_len=16384) \
+                    and (r.get("type") in ("embed", "watch2") or is_media_url(r["url"])):
                 # Sauvegarde la liste complète d'épisodes (pas seulement celui
                 # résolu), sinon /episodes ne renverrait qu'une seule entrée.
                 entries = []
@@ -301,8 +317,16 @@ def handle_resolve_episode(handler, params):
                                     if not is_safe_external_url(u):
                                         continue
                                     r = resolve_url(u)
-                                    if r and r.get("url") and r.get("type") != "raw":
-                                        result = {"url": r["url"], "type": r["type"], "referer": u}
+                                    if r and is_media_url(r.get("url")):
+                                        result = {"url": r["url"],
+                                                  "type": media_type(r["url"]) or r.get("type", "mp4"),
+                                                  "referer": u}
+                                        break
+                                    media = extract_media_from_url(u)
+                                    if media:
+                                        result = {"url": media,
+                                                  "type": media_type(media) or "m3u8",
+                                                  "referer": u}
                                         break
                                 break
                         if result:

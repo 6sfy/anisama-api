@@ -190,15 +190,38 @@
             <tr><td><code>GET</code></td><td><code>/api/v2/search?q=QUERY</code></td><td>Search across all 7 sources. Returns deduped results with real fuzzy scores (0-100).</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/catalog?source=all&page=1&limit=50&q=TEXT</code></td><td>Browse the full catalog with filters, pagination and text search.</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/stats</code></td><td>Global stats: counts by source, top genres, year range.</td></tr>
-            <tr><td><code>GET</code></td><td><code>/api/v2/episodes?source=SRC&slug=SLUG</code></td><td>Get episode list for an anime. Supports: anime-sama, myfluneo, voiranime, animesultra, frenchanime, animoflix.</td></tr>
-            <tr><td><code>GET</code></td><td><code>/api/v2/resolve?url=URL&source=SRC</code></td><td>Resolve any embed URL to a direct video URL.</td></tr>
-            <tr><td><code>GET</code></td><td><code>/api/v2/resolve-episode?source=SRC&slug=SLUG&num=NUM</code></td><td>Resolve a specific episode number. Uses absolute episode numbering for multi-season anime.</td></tr>
-            <tr><td><code>GET</code></td><td><code>/api/v2/sources</code></td><td>List all available sources with entry counts.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/episodes?source=SRC&slug=SLUG</code></td><td>Get episode list for an anime. Supports: anime-sama, voiranime, franime, myfluneo, animesultra, frenchanime, animoflix. Use <code>&amp;season=N</code> for franime.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/seasons?source=SRC&slug=SLUG</code></td><td>Season list via fast engine (anime-sama, franime, voiranime).</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/hosts?slug=SLUG&amp;season_url=URL</code></td><td>Distinct hosts for an Anime-Sama season.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/resolve?url=URL&amp;source=SRC</code></td><td>Resolve an embed URL to a direct video URL when possible.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/resolve-episode?source=SRC&amp;slug=SLUG&amp;num=NUM</code></td><td>Resolve an episode number. Uses absolute numbering for anime-sama and accepts <code>&amp;season=N&amp;lang=vo|vf</code> for franime.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/sources</code></td><td>List available sources with entry counts.</td></tr>
             <tr><td><code>GET</code></td><td><code>/api/v2/info?title=TITLE</code></td><td>AniList info for an anime (score, studios, synopsis).</td></tr>
-            <tr><td><code>GET</code></td><td><code>/player?url=URL&title=TITLE</code></td><td>HTML player page with iframe.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/v2/engine</code></td><td>Fast engine status (enabled, cache size, proxy).</td></tr>
+            <tr><td><code>GET</code></td><td><code>/health</code></td><td>Liveness probe.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/player?url=URL&amp;title=TITLE</code></td><td>HTML player page with iframe.</td></tr>
           </tbody>
         </table>
       </div>
+
+      <h2 data-i18n="api.rate_limits">Rate limits</h2>
+      <p data-i18n="api.rate_limits.desc">Per-IP sliding window (60 seconds), with independent budgets per endpoint class.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-i18n="api.rate_class">Class</th><th data-i18n="api.rate_endpoints">Endpoints</th><th data-i18n="api.rate_limit">Limit</th></tr></thead>
+          <tbody>
+            <tr><td>Light</td><td>catalog, stats, sources, info, health</td><td><code>60/min</code></td></tr>
+            <tr><td>Heavy</td><td>search, episodes, seasons, hosts, resolve</td><td><code>20/min</code></td></tr>
+            <tr><td>Resolve</td><td>resolve-episode</td><td><code>5/min</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p data-i18n="api.rate_headers">Every response includes <code>RateLimit-Limit</code>, <code>RateLimit-Remaining</code> and <code>RateLimit-Reset</code>. A <code>429</code> also sends <code>Retry-After</code>.</p>
+      <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">json</span></div><div class="code-body">
+<span class="c-comment" data-i18n="api.rate_429_comment"># HTTP 429 — too many requests</span>
+{"error": "rate_limited", "request_id": "..."}
+      </div></div>
+      <p data-i18n="api.rate_config">Configure with <code>ANISAMA_RATE_LIMIT_GLOBAL</code>, <code>ANISAMA_RATE_LIMIT_HEAVY</code>, <code>ANISAMA_RATE_LIMIT_RESOLVE</code> and <code>ANISAMA_RATE_LIMIT_WINDOW</code> (<code>0</code> disables a tier). Behind Cloudflare, set <code>ANISAMA_TRUST_PROXY=1</code>.</p>
 
       <h2 data-i18n="api.example_search">Example: Search</h2>
       <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">bash</span></div><div class="code-body">
@@ -400,6 +423,7 @@
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx1"><strong>Anime-Sama</strong> : scan/one-shot seasons no longer pollute episode numbering.</span></div>
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx2"><strong>Episode cache</strong> : resolving one episode stores the full list without erasing already-resolved URLs.</span></div>
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx3"><strong>Sources</strong> : FRAnime was missing from the docs; all 7 sources are now listed and documented.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx4"><strong>HLS playback</strong> : IP/ASN-bound <code>m3u8</code> tokens fall back to the ansembed iframe in <code>/player</code>.</span></div>
           <div class="cl-item"><span class="cl-tag up">UP</span><span class="cl-text" data-i18n="changelog.v201.up1"><strong>Light mode</strong> : warm cream theme with readable code blocks, tables and terminal.</span></div>
         </div>
       </div>

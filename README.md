@@ -135,6 +135,18 @@ Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set th
 - CORS restricted to an origin whitelist; `Authorization`/`X-API-Key` allowed for authenticated deployments.
 - Sources that cannot serve requests (Playwright missing for MyFluneo/AnimoFlix) are not advertised by `/api/v2/sources`.
 
+### Rate limits
+
+Per IP, sliding 60-second window, with independent budgets:
+
+| Class | Endpoints | Limit |
+|-------|-----------|-------|
+| Light | catalog, stats, sources, info, health | 60/min |
+| Heavy | search, episodes, seasons, hosts, resolve | 20/min |
+| Resolve | resolve-episode | 5/min |
+
+Exceeded limits return `429` with `Retry-After`; every response includes `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`. Behind Cloudflare, set `ANISAMA_TRUST_PROXY=1` to limit on `CF-Connecting-IP` instead of the shared edge IP.
+
 ## Structure
 
 ```

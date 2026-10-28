@@ -4,6 +4,7 @@ import time
 
 from src.db.models import save_episodes, get_anime_episodes
 from src.db.connection import get_db
+from src.helpers import extract_media_from_url, is_media_url, media_type
 
 
 class BackgroundIndexer:
@@ -122,9 +123,14 @@ class BackgroundIndexer:
                             u = mirrors[k]
                             try:
                                 r = resolve_url(u)
-                                if r and r.get("url") and r.get("type") != "raw":
+                                if r and is_media_url(r.get("url")):
                                     ep["resolved"] = r["url"]
-                                    ep["resolved_type"] = r.get("type", "")
+                                    ep["resolved_type"] = media_type(r["url"]) or r.get("type", "")
+                                    return
+                                media = extract_media_from_url(u)
+                                if media:
+                                    ep["resolved"] = media
+                                    ep["resolved_type"] = media_type(media) or "m3u8"
                                     return
                             except Exception:
                                 pass

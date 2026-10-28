@@ -19,6 +19,7 @@ All notable changes to `anisama-api` are documented in this file.
 - FRAnime is now listed in `/api/v2/sources` and documented on the sources page (7 sources total).
 - Light mode is now warm cream with readable code blocks, table headers, inline code and terminal.
 - Code block text no longer disappears in light mode.
+- HLS playback: IP/ASN-bound server tokens fall back to the ansembed iframe; the resolver extracts media from embed pages and ignores stale non-media cache entries.
 
 ### Changed
 

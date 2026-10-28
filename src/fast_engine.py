@@ -26,6 +26,8 @@ import os
 import threading
 import time
 
+from src.helpers import extract_media_from_url, is_media_url, media_type
+
 logger = logging.getLogger("anisama-api")
 
 try:
@@ -316,15 +318,21 @@ def _resolve_best_mirror(mirrors, referer):
             r = resolve_url(mirror)
         except Exception as exc:
             logger.warning("resolve miroir %s: %s", mirror, exc)
-            continue
+            r = None
         direct = (r or {}).get("url")
-        if not direct or not direct.startswith(("http://", "https://")):
-            continue
-        rtype = r.get("type")
-        if rtype not in (None, "raw", "embed") and direct != mirror:
-            return {"url": direct, "type": rtype, "referer": referer}
-        if rtype == "embed" and direct != mirror:
-            fallback = {"url": direct, "type": "embed", "referer": referer}
+        rtype = (r or {}).get("type")
+        if direct and direct.startswith(("http://", "https://")):
+            if is_media_url(direct):
+                return {"url": direct, "type": media_type(direct) or rtype,
+                        "referer": referer}
+            if rtype == "embed" and direct != mirror:
+                fallback = {"url": direct, "type": "embed", "referer": referer}
+        # 2.1.6 renvoie parfois un tracker (staticmoly/deskademeta.php) :
+        # extraire le vrai m3u8 directement depuis la page embed.
+        media = extract_media_from_url(mirror)
+        if media:
+            return {"url": media, "type": media_type(media) or "embed",
+                    "referer": referer}
     return fallback
 
 

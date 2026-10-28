@@ -13,6 +13,8 @@ import uuid
 from functools import lru_cache
 from urllib.parse import urlparse
 
+import requests
+
 
 # ── HTTP response helpers ──
 
@@ -103,6 +105,57 @@ def is_safe_external_url(url, max_len=2048):
     if not host:
         return False
     return _host_is_public(host)
+
+
+# ── Media URL helpers ──
+
+_MEDIA_TYPE_RE = re.compile(r"\.(m3u8|mp4|webm|mkv)(?:[?#]|$)", re.I)
+_MEDIA_URL_PATTERN = r"https?://[^\"'<>\s]+?\.(?:{ext})(?:\?[^\"'<>\s]*)?"
+_MEDIA_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+             "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+
+
+def media_type(url):
+    """Return the media extension of a URL (m3u8/mp4/webm/mkv) or None."""
+    match = _MEDIA_TYPE_RE.search(url or "")
+    return match.group(1).lower() if match else None
+
+
+def is_media_url(url):
+    """True when the URL looks like a direct playable media file/playlist."""
+    return media_type(url) is not None
+
+
+def extract_media_from_url(url, timeout=15):
+    """Fetch an embed page and extract the first direct m3u8/mp4 URL.
+
+    Some resolvers return an intermediate tracking/redirect endpoint
+    (e.g. staticmoly deskademeta.php) instead of the real stream. The
+    embed page itself often exposes the signed m3u8 in its HTML/JS.
+    """
+    if not url or not url.startswith(("http://", "https://")):
+        return None
+    parsed = urlparse(url)
+    try:
+        r = requests.get(
+            url,
+            timeout=timeout,
+            headers={
+                "User-Agent": _MEDIA_UA,
+                "Accept-Language": "fr-FR,fr;q=0.9",
+                "Referer": "{s}://{n}/".format(s=parsed.scheme, n=parsed.netloc),
+            },
+        )
+    except requests.RequestException:
+        return None
+    if r.status_code != 200 or not r.text:
+        return None
+    text = r.text[:2_000_000].replace("\\/", "/").replace("&amp;", "&")
+    for ext in ("m3u8", "mp4", "webm", "mkv"):
+        match = re.search(_MEDIA_URL_PATTERN.format(ext=ext), text, re.I)
+        if match:
+            return match.group(0)
+    return None
 
 
 # ── Text helpers ──

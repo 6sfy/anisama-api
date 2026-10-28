@@ -93,6 +93,27 @@ def test_ssrf_guard_blocks_local_targets():
     assert not is_safe_external_url("http://169.254.169.254/latest/meta-data/")
 
 
+def test_media_url_detection():
+    from src.helpers import is_media_url, media_type
+
+    assert is_media_url("https://cdn.example/hls/index.m3u8?t=abc")
+    assert is_media_url("https://cdn.example/video.mp4?sig=1")
+    assert media_type("https://cdn.example/video.mp4") == "mp4"
+    assert not is_media_url("https://cdn.staticmoly.me/deskademeta.php?cv=x")
+
+
+def test_extract_media_from_embed_page(monkeypatch):
+    from src import helpers
+
+    class FakeResponse:
+        status_code = 200
+        text = '<script>var src="https://cdn.example/hls/master.m3u8?t=abc";</script>'
+
+    monkeypatch.setattr(helpers.requests, "get", lambda *a, **k: FakeResponse())
+    assert helpers.extract_media_from_url("https://embed.example/x") == \
+        "https://cdn.example/hls/master.m3u8?t=abc"
+
+
 def test_catalog_invalid_pagination_returns_400():
     from src.routes import catalog
 
@@ -186,6 +207,7 @@ def test_voiranime_unresolved_iframe_is_embed(monkeypatch):
     )
     monkeypatch.setattr(resolver_mod, "resolve_url",
                         lambda url: {"url": url, "type": "raw"})
+    monkeypatch.setattr(resolve, "extract_media_from_url", lambda url: None)
 
     handler = FakeHandler()
     resolve.handle_resolve(handler, {
@@ -220,6 +242,90 @@ def test_anime_sama_prefers_resolvable_mirror(monkeypatch):
     assert r["type"] == "m3u8"
     # ansembed est testé en premier malgré sa position eps2
     assert calls[0].startswith("https://ansembed.net")
+
+
+def test_best_mirror_extracts_media_when_resolver_returns_tracker(monkeypatch):
+    from src import fast_engine
+    import anisama.resolver as resolver
+
+    monkeypatch.setattr(
+        resolver, "resolve_url",
+        lambda url: {"url": "https://cdn.staticmoly.me/deskademeta.php?cv=x",
+                     "type": "mp4"},
+    )
+    monkeypatch.setattr(
+        fast_engine, "extract_media_from_url",
+        lambda url: "https://cdn.example/hls/master.m3u8?t=abc",
+    )
+
+    r = fast_engine._resolve_best_mirror(
+        ["https://ansembed.net/embed-x.html"], "https://anime-sama.to/")
+    assert r["url"] == "https://cdn.example/hls/master.m3u8?t=abc"
+    assert r["type"] == "m3u8"
+
+
+def test_to_direct_extracts_media_from_iframe(monkeypatch):
+    from src.routes import resolve
+    import anisama.resolver as resolver
+
+    monkeypatch.setattr(
+        resolver, "resolve_url",
+        lambda url: {"url": "https://cdn.staticmoly.me/deskademeta.php?cv=x",
+                     "type": "mp4"},
+    )
+    monkeypatch.setattr(
+        resolve, "extract_media_from_url",
+        lambda url: "https://cdn.example/hls/master.m3u8?t=abc",
+    )
+
+    r = resolve._to_direct({"url": "https://ansembed.net/embed-x.html", "type": "raw"})
+    assert r["url"] == "https://cdn.example/hls/master.m3u8?t=abc"
+    assert r["type"] == "m3u8"
+
+
+def test_player_hls_uses_hlsjs(monkeypatch):
+    from src.routes import player
+
+    monkeypatch.setattr(player, "is_safe_external_url", lambda *a, **k: True)
+    handler = FakeHandler()
+    player.handle(handler, {"url": ["https://example.com/video.m3u8"],
+                            "title": ["Test"]})
+    html = handler.wfile.getvalue().decode("utf-8")
+    assert handler.status == 200
+    assert '<video id="video"' in html
+    assert "hls.js@1.5.20" in html
+    assert "media-src http: https: blob:" in handler._csp
+
+
+def test_player_uses_ansembed_for_known_hls(monkeypatch):
+    from src.routes import player
+
+    monkeypatch.setattr(player, "is_safe_external_url", lambda *a, **k: True)
+    handler = FakeHandler()
+    player.handle(handler, {
+        "url": ["https://prx-1476-ant.vmpx.online/hls2/03/02768/"
+                "y18xw3fqcf6l_n/master.m3u8?t=x"],
+        "title": ["Test"],
+    })
+    html = handler.wfile.getvalue().decode("utf-8")
+    assert "https://ansembed.net/embed-y18xw3fqcf6l.html" in html
+    assert '<video id="video"' not in html
+    assert handler._referrer_policy == "strict-origin-when-cross-origin"
+    assert player._ansembed_url(
+        "https://cdn.staticmoly.me/deskademeta.php?cv=abc123&d=1") == \
+        "https://ansembed.net/embed-abc123.html"
+
+
+def test_player_non_hls_uses_iframe(monkeypatch):
+    from src.routes import player
+
+    monkeypatch.setattr(player, "is_safe_external_url", lambda *a, **k: True)
+    handler = FakeHandler()
+    player.handle(handler, {"url": ["https://example.com/embed"],
+                            "title": ["Test"]})
+    html = handler.wfile.getvalue().decode("utf-8")
+    assert "<iframe" in html
+    assert "hls.js" not in html
 
 
 def test_voiranime_seasons_route(monkeypatch):
