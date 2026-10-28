@@ -153,6 +153,25 @@ class FakeHandler:
         pass
 
 
+def test_fast_search_anime_sama_relevance(monkeypatch):
+    from src import fast_engine
+
+    class FakeEngine:
+        def search(self, q, limit=30):
+            return [
+                {"source": "anime-sama", "title": "Boruto",
+                 "url": "https://anime-sama.to/catalogue/boruto/", "slug": "boruto"},
+                {"source": "anime-sama", "title": "Naruto",
+                 "url": "https://anime-sama.to/catalogue/naruto/", "slug": "naruto"},
+            ]
+
+    monkeypatch.setattr(fast_engine, "engine", lambda: FakeEngine())
+    out = fast_engine._search_uncached("naruto", 10)
+    scores = {r["title"]: r["score"] for r in out}
+    assert scores["Naruto"] == 100
+    assert scores["Boruto"] == 80
+
+
 def test_search_route_clamps_engine_scores(monkeypatch):
     from src.routes import search as search_route
 
@@ -163,6 +182,7 @@ def test_search_route_clamps_engine_scores(monkeypatch):
         {"title": "High Card", "link": "https://x", "slug": "high-card",
          "score": 143, "source": "franime"},
     ])
+    monkeypatch.setattr(search_route.fast_engine, "fast_seasons", lambda *a, **k: [])
 
     handler = FakeHandler()
     search_route.handle(handler, {"q": ["hi"]})

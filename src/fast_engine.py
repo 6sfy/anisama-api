@@ -23,6 +23,7 @@ Désactivation / configuration
 
 import logging
 import os
+import re
 import threading
 import time
 
@@ -146,6 +147,18 @@ def fast_search(q, limit=20):
     return results
 
 
+def _title_score(q, title):
+    qn = re.sub(r"[^a-z0-9]", "", (q or "").lower())
+    tn = re.sub(r"[^a-z0-9]", "", (title or "").lower())
+    if not qn or not tn:
+        return 70
+    if tn == qn:
+        return 100
+    if tn.startswith(qn) or qn in tn:
+        return 95
+    return 80
+
+
 def _search_uncached(q, limit):
     e = engine()
     out = []
@@ -163,7 +176,7 @@ def _search_uncached(q, limit):
                 "title": r.get("title") or "",
                 "link": r.get("url") or "",
                 "slug": r.get("slug") or "",
-                "score": 100,  # live search anime-sama = résultat exact du site
+                "score": _title_score(q, r.get("title")),
                 "source": "anime-sama",
             })
         elif src == "franime":

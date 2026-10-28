@@ -131,6 +131,37 @@ def test_ssrf_guard_blocks_local_targets():
     assert not is_safe_external_url("http://169.254.169.254/latest/meta-data/")
 
 
+def test_search_promotes_anime_sama_candidate(monkeypatch):
+    from src.routes import search as search_route
+
+    catalog = [{
+        "title": "Naruto",
+        "link": "https://voiranime.rip/naruto/",
+        "source": "voiranime",
+        "alt_source": ["myfluneo"],
+    }]
+    monkeypatch.setattr(search_route.cache_mod, "load_catalog", lambda: catalog)
+    monkeypatch.setattr(search_route, "_get_alt_results", lambda q: [])
+    monkeypatch.setattr(search_route.fast_engine, "enabled", lambda: True)
+    monkeypatch.setattr(search_route.fast_engine, "fast_search", lambda q: [])
+
+    def fake_seasons(source, slug):
+        if source == "anime-sama" and slug == "naruto":
+            return [{"name": "Saison 1",
+                     "url": "https://anime-sama.to/catalogue/naruto/saison1/vostfr/"}]
+        return []
+
+    monkeypatch.setattr(search_route.fast_engine, "fast_seasons", fake_seasons)
+
+    handler = FakeHandler()
+    search_route.handle(handler, {"q": ["naruto"]})
+    body = json.loads(handler.wfile.getvalue())
+    top = body["results"][0]
+    assert top["primary_source"] == "anime-sama"
+    assert top["slug"] == "naruto"
+    assert top["link"].startswith("https://anime-sama.to/catalogue/naruto/")
+
+
 def test_anime_sama_wins_search_tie():
     from src.routes.search import _merge_alt_result
 

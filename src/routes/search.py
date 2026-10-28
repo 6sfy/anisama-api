@@ -1,5 +1,7 @@
 import logging
+import re
 import time
+import unicodedata
 
 from anisama import cache as cache_mod
 from anisama.search import _calc_score
@@ -11,6 +13,11 @@ logger = logging.getLogger("anisama-api")
 
 _alt_cache = {}
 _alt_cache_time = 0
+
+
+def _slugify_title(title):
+    value = unicodedata.normalize("NFKD", title or "").encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
 
 
 def _merge_alt_result(results, r):
@@ -156,6 +163,33 @@ def handle(handler, params):
             logger.warning("fast_search a échoué, pipeline historique seul: %s", exc)
 
     out = sorted(results.values(), key=lambda x: (-x["score"], x["title"]))
+
+    # Live search can miss an Anime-Sama title (the site search is partial).
+    # Validate a slug derived from the title for the top results and, when it
+    # exists, make Anime-Sama the primary source (episodes are fetched there).
+    if fast_engine.enabled():
+        for r in out[:3]:
+            if r.get("primary_source") == "anime-sama":
+                continue
+            slug = _slugify_title(r.get("title", ""))
+            if not slug:
+                continue
+            try:
+                seasons = fast_engine.fast_seasons("anime-sama", slug)
+            except Exception:
+                continue
+            if not seasons:
+                continue
+            first_url = seasons[0].get("url", "") if isinstance(seasons[0], dict) else ""
+            base = first_url.split("/catalogue/", 1)[0] if "/catalogue/" in first_url else "https://anime-sama.to"
+            r["link"] = "{b}/catalogue/{s}/".format(b=base, s=slug)
+            r["slug"] = slug
+            r["primary_source"] = "anime-sama"
+            if "anime-sama" not in (r.get("sources") or []):
+                r.setdefault("sources", []).append("anime-sama")
+            r["score"] = max(r.get("score", 0), 100)
+        out.sort(key=lambda x: (-x["score"], x["title"]))
+
     send_json(handler, {"query": q, "count": len(out), "results": out[:20]})
 
 
