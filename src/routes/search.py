@@ -21,7 +21,8 @@ def _merge_alt_result(results, r):
     score = fast_engine.clamp_score(r.get("score"))
     if base_key in results:
         existing = results[base_key]
-        if score > existing["score"]:
+        prefer_primary = r["source"] == "anime-sama"
+        if score > existing["score"] or (prefer_primary and score >= existing["score"]):
             existing["score"] = score
             existing["link"] = r["link"]
             existing["slug"] = r.get("slug", "")

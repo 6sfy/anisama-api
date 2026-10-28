@@ -163,7 +163,7 @@ def _search_uncached(q, limit):
                 "title": r.get("title") or "",
                 "link": r.get("url") or "",
                 "slug": r.get("slug") or "",
-                "score": 90,  # live search anime-sama = résultat exact du site
+                "score": 100,  # live search anime-sama = résultat exact du site
                 "source": "anime-sama",
             })
         elif src == "franime":

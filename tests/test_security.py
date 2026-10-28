@@ -131,6 +131,34 @@ def test_ssrf_guard_blocks_local_targets():
     assert not is_safe_external_url("http://169.254.169.254/latest/meta-data/")
 
 
+def test_anime_sama_wins_search_tie():
+    from src.routes.search import _merge_alt_result
+
+    results = {
+        "naruto": {
+            "title": "Naruto",
+            "link": "https://voiranime.rip/naruto/",
+            "slug": "naruto",
+            "score": 100,
+            "sources": ["myfluneo"],
+            "primary_source": "voiranime",
+            "genres": [],
+            "langs": ["vostfr"],
+        }
+    }
+    _merge_alt_result(results, {
+        "source": "anime-sama",
+        "title": "Naruto",
+        "link": "https://anime-sama.to/catalogue/naruto/",
+        "slug": "naruto",
+        "score": 100,
+    })
+    merged = results["naruto"]
+    assert merged["primary_source"] == "anime-sama"
+    assert merged["link"].startswith("https://anime-sama.to/")
+    assert "anime-sama" in merged["sources"]
+
+
 def test_source_counts_normalize_and_include_alts():
     from src.helpers import source_counts
 
