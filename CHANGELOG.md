@@ -24,6 +24,8 @@ All notable changes to `anisama-api` are documented in this file.
 - HEAD requests are routed through the JSON handlers, so /health works for monitoring probes.
 - /api/v2/engine exposes only {engine, enabled}; /stats and /sources share the same per-source counters; .well-known/security.txt added.
 - Docs CSP no longer allows unsafe-inline scripts (delegated listeners); player scripts use a per-request nonce.
+- Client IP is resolved from CF-Connecting-IP/X-Forwarded-For only from trusted proxies; access logs and rate limits are per client.
+- Optional X-Origin-Secret origin lock; proxy trust modes auto/1/0 + ANISAMA_TRUSTED_PROXIES.
 
 ### Changed
 

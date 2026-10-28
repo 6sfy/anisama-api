@@ -28,7 +28,8 @@ from src.db.connection import init_db
 from src.db.models import import_catalog, get_indexed_count
 from src.db.indexer import BackgroundIndexer
 from src.helpers import send_json, send_internal_error
-from src.limits import RateLimiter, RATE_LIMIT_WINDOW, client_ip
+from src.limits import (RateLimiter, RATE_LIMIT_WINDOW, client_ip,
+                        trust_proxy_mode)
 from anisama import cache as cache_mod
 from anisama.scraper.base import find_active_domain
 
@@ -72,9 +73,9 @@ API_TOKEN = (os.environ.get("ANISAMA_API_TOKEN") or "").strip()
 AUTH_PATHS = ("/api/v2/episodes", "/api/v2/resolve", "/api/v2/resolve-episode",
               "/api/v2/seasons", "/api/v2/hosts", "/api/episodes", "/api/resolve")
 
-# Behind Cloudflare, set ANISAMA_TRUST_PROXY=1 so rate limiting applies to the
-# real client (CF-Connecting-IP) instead of the shared Cloudflare edge IP.
-TRUST_PROXY = (os.environ.get("ANISAMA_TRUST_PROXY") or "0").strip() == "1"
+# Origin lock: when set, every request must carry X-Origin-Secret. Add the
+# header with a Cloudflare Transform Rule and firewall the origin to CF.
+ORIGIN_SECRET = (os.environ.get("ANISAMA_ORIGIN_SECRET") or "").strip()
 
 # CORS: same-origin needs no header. Default whitelist = prod domain + local.
 CORS_ORIGINS = (os.environ.get("ANISAMA_CORS_ORIGINS") or "").strip()
@@ -213,6 +214,11 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         if not allowed:
             send_json(self, {"error": "rate_limited", "request_id": self.request_id}, 429)
             return False
+        if ORIGIN_SECRET:
+            supplied = (self.headers.get("X-Origin-Secret") or "").strip()
+            if not supplied or not hmac.compare_digest(supplied, ORIGIN_SECRET):
+                send_json(self, {"error": "forbidden", "request_id": self.request_id}, 403)
+                return False
         if not self._authorized(path):
             send_json(self, {"error": "unauthorized", "request_id": self.request_id}, 401,
                       headers={"WWW-Authenticate": 'Bearer realm="anisama"'})
@@ -223,6 +229,11 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.request_id = uuid.uuid4().hex[:16]
+        if ORIGIN_SECRET:
+            supplied = (self.headers.get("X-Origin-Secret") or "").strip()
+            if not supplied or not hmac.compare_digest(supplied, ORIGIN_SECRET):
+                send_json(self, {"error": "forbidden", "request_id": self.request_id}, 403)
+                return
         self.send_response(204)
         self.end_headers()
 
@@ -351,7 +362,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         msg = _redact_sensitive(format % args)
         if len(msg) > 250:
             msg = msg[:250] + "..."
-        logger.info("%s - %s [%s]", self.client_address[0], msg, self.request_id)
+        logger.info("%s - %s [%s]", self._client_ip(), msg, self.request_id)
 
 
 def bind_server(host, port):
@@ -459,7 +470,14 @@ def main():
     logger.info("Listening on http://{h}:{p}".format(h=host, p=port))
     logger.info("Rate limits: %s", RATE_LIMITS)
     logger.info("Auth token: %s", "ACTIF" if API_TOKEN else "désactivée")
-    logger.info("Trust proxy (CF-Connecting-IP): %s", "oui" if TRUST_PROXY else "non")
+    logger.info("Trust proxy: %s", trust_proxy_mode())
+    logger.info("Origin lock: %s", "ACTIF" if ORIGIN_SECRET else "désactivée")
+    if not ORIGIN_SECRET:
+        logger.warning(
+            "Origin lock désactivée : si l'origine est joignable directement, "
+            "configure ANISAMA_ORIGIN_SECRET (Cloudflare Transform Rule) "
+            "ou un tunnel cloudflared / un filtrage IP Cloudflare."
+        )
     logger.info("Endpoints:")
     logger.info("  GET /api/v2/search?q=QUERY")
     logger.info("  GET /api/v2/catalog?source=SOURCE&page=1&limit=50&q=QUERY")

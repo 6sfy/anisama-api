@@ -72,6 +72,41 @@ def test_rate_limiter_zero_disables_tier():
         assert limiter.check("1.2.3.4", "light")[0]
 
 
+def test_client_ip_trusted_proxy(monkeypatch):
+    from src.limits import client_ip
+
+    monkeypatch.setenv("ANISAMA_TRUST_PROXY", "auto")
+    handler = FakeHandler()
+    handler.client_address = ("10.0.0.5", 1234)
+    handler.headers = {"CF-Connecting-IP": "203.0.113.9"}
+    assert client_ip(handler) == "203.0.113.9"
+
+    # A public peer not in Cloudflare/custom ranges cannot spoof the header.
+    handler.client_address = ("8.8.8.8", 1234)
+    handler.headers = {"CF-Connecting-IP": "203.0.113.9"}
+    assert client_ip(handler) == "8.8.8.8"
+
+    monkeypatch.setenv("ANISAMA_TRUST_PROXY", "1")
+    assert client_ip(handler) == "203.0.113.9"
+
+    monkeypatch.setenv("ANISAMA_TRUST_PROXY", "0")
+    assert client_ip(handler) == "8.8.8.8"
+
+
+def test_client_ip_xff_and_invalid_values(monkeypatch):
+    from src.limits import client_ip
+
+    monkeypatch.setenv("ANISAMA_TRUST_PROXY", "auto")
+    handler = FakeHandler()
+    handler.client_address = ("127.0.0.1", 1234)
+    handler.headers = {"X-Forwarded-For": "198.51.100.7, 10.0.0.2"}
+    assert client_ip(handler) == "198.51.100.7"
+
+    handler.headers = {"CF-Connecting-IP": "not-an-ip",
+                       "X-Forwarded-For": "198.51.100.8"}
+    assert client_ip(handler) == "198.51.100.8"
+
+
 def test_cors_origin_whitelist(monkeypatch):
     monkeypatch.setattr(srv, "CORS_ORIGINS", "")
     assert srv._cors_origin_allowed("https://anisama.sexcaller.lol")
@@ -584,6 +619,35 @@ def test_bearer_token_protects_expensive_endpoints(live_server, monkeypatch):
 
     # Health stays public.
     status, _, _ = _request(live_server, "/api/v2/health")
+    assert status == 200
+
+
+def test_rate_limit_is_per_client_ip(live_server, monkeypatch):
+    monkeypatch.setenv("ANISAMA_TRUST_PROXY", "auto")
+    monkeypatch.setattr(
+        srv, "RATE_LIMITER",
+        srv.RateLimiter({"light": 1, "heavy": 1, "resolve": 1}, 60),
+    )
+    first = {"CF-Connecting-IP": "198.51.100.10"}
+    other = {"CF-Connecting-IP": "198.51.100.11"}
+
+    status, _, _ = _request(live_server, "/api/v2/health", headers=first)
+    assert status == 200
+    status, _, _ = _request(live_server, "/api/v2/health", headers=first)
+    assert status == 429
+    status, _, _ = _request(live_server, "/api/v2/health", headers=other)
+    assert status == 200
+
+
+def test_origin_secret_required(live_server, monkeypatch):
+    monkeypatch.setattr(srv, "ORIGIN_SECRET", "sekret")
+
+    status, headers, body = _request(live_server, "/health")
+    assert status == 403
+    assert json.loads(body)["error"] == "forbidden"
+
+    status, headers, body = _request(
+        live_server, "/health", headers={"X-Origin-Secret": "sekret"})
     assert status == 200
 
 

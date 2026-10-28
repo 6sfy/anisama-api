@@ -1,5 +1,6 @@
 """Shared per-IP rate limiting and proxy-aware client address."""
 
+import ipaddress
 import os
 import threading
 import time
@@ -14,6 +15,55 @@ def env_int(name, default):
 
 
 RATE_LIMIT_WINDOW = env_int("ANISAMA_RATE_LIMIT_WINDOW", 60)
+
+_CLOUDFLARE_NETWORKS = tuple(ipaddress.ip_network(n) for n in (
+    "173.245.48.0/20", "103.21.244.0/22", "103.22.200.0/22",
+    "103.31.4.0/22", "141.101.64.0/18", "108.162.192.0/18",
+    "190.93.240.0/20", "188.114.96.0/20", "197.234.240.0/22",
+    "198.41.128.0/17", "162.158.0.0/15", "104.16.0.0/13",
+    "104.24.0.0/14", "172.64.0.0/13", "131.0.72.0/22",
+    "2400:cb00::/32", "2606:4700::/32", "2803:f800::/32",
+    "2405:b500::/32", "2405:8100::/32", "2a06:98c0::/29",
+    "2c0f:f248::/32",
+))
+
+
+def _parse_networks(raw):
+    networks = []
+    for part in (raw or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            networks.append(ipaddress.ip_network(part, strict=False))
+        except ValueError:
+            continue
+    return tuple(networks)
+
+
+_CUSTOM_PROXIES = _parse_networks(os.environ.get("ANISAMA_TRUSTED_PROXIES", ""))
+
+
+def _valid_ip(value):
+    try:
+        ipaddress.ip_address(value)
+        return value
+    except ValueError:
+        return None
+
+
+def _is_trusted_proxy(peer):
+    try:
+        addr = ipaddress.ip_address(peer)
+    except ValueError:
+        return False
+    if addr.is_private or addr.is_loopback:
+        return True
+    return any(addr in net for net in _CLOUDFLARE_NETWORKS + _CUSTOM_PROXIES)
+
+
+def trust_proxy_mode():
+    return (os.environ.get("ANISAMA_TRUST_PROXY") or "auto").strip().lower()
 
 
 class RateLimiter:
@@ -60,12 +110,27 @@ class RateLimiter:
 
 
 def client_ip(handler):
-    """Real client address, optionally behind Cloudflare."""
-    if (os.environ.get("ANISAMA_TRUST_PROXY") or "0").strip() == "1":
-        cf = handler.headers.get("CF-Connecting-IP")
-        if cf:
-            return cf.strip()
-        xff = handler.headers.get("X-Forwarded-For")
-        if xff:
-            return xff.split(",")[0].strip()
-    return handler.client_address[0]
+    """Real client address.
+
+    `auto` (default) trusts CF-Connecting-IP / X-Forwarded-For only when the
+    direct peer is loopback, private, Cloudflare, or listed in
+    ANISAMA_TRUSTED_PROXIES. `1` always trusts the headers; `0` never does.
+    """
+    peer = handler.client_address[0]
+    mode = trust_proxy_mode()
+    if mode not in ("1", "true", "yes", "auto"):
+        return peer
+    if mode == "auto" and not _is_trusted_proxy(peer):
+        return peer
+
+    headers = getattr(handler, "headers", None)
+    if not headers:
+        return peer
+
+    cf = (headers.get("CF-Connecting-IP") or "").split(",")[0].strip()
+    if _valid_ip(cf):
+        return cf
+    xff = (headers.get("X-Forwarded-For") or "").split(",")[0].strip()
+    if _valid_ip(xff):
+        return xff
+    return peer

@@ -193,6 +193,7 @@ const I18N = {
     'changelog.v201.fx3': '<strong>Sources</strong> : FRAnime manquait dans la doc ; les 7 sources sont maintenant listées et documentées.',
     'changelog.v201.fx4': '<strong>Lecture HLS</strong> : les tokens <code>m3u8</code> liés à une autre IP/ASN basculent sur l\'iframe ansembed dans <code>/player</code>.',
     'changelog.v201.fx5': '<strong>Hygiène API</strong> : les cache-miss d\'épisodes sont limités à 20/min, HEAD est supporté pour les sondes, <code>/engine</code> est minimal et <code>/stats</code> + <code>/sources</code> partagent les mêmes compteurs.',
+    'changelog.v201.fx6': '<strong>IP client</strong> : <code>CF-Connecting-IP</code> / <code>X-Forwarded-For</code> ne sont acceptés que depuis Cloudflare ou les proxies configurés ; logs et rate limits sont par client.',
     'changelog.v201.up1': '<strong>Mode clair</strong> : thème crème avec blocs de code, tableaux et terminal lisibles.',
     'changelog.v200.new1': '<strong>Fast engine</strong> : Anime-Sama + FRAnime via extraction directe des APIs (10-50x plus rapide, sans BeautifulSoup ni Playwright).',
     'changelog.v200.new2': 'Nouveaux endpoints : <code>/api/v2/seasons</code>, <code>/api/v2/hosts</code>, <code>/api/v2/engine</code>, <code>/health</code>.',

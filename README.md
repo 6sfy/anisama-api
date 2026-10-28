@@ -123,7 +123,9 @@ Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set th
 | `ANISAMA_RATE_LIMIT_RESOLVE` | `5` | `resolve-episode` requests per IP per window |
 | `ANISAMA_RATE_LIMIT_WINDOW` | `60` | Rate-limit window in seconds |
 | `ANISAMA_API_TOKEN` | (empty) | When set, expensive endpoints require `Authorization: Bearer <token>` |
-| `ANISAMA_TRUST_PROXY` | `0` | `1` behind Cloudflare: rate-limit on `CF-Connecting-IP` (not the CF edge IP) |
+| `ANISAMA_TRUST_PROXY` | `auto` | `auto` trusts client headers from loopback/private/Cloudflare peers; `1` always; `0` never |
+| `ANISAMA_TRUSTED_PROXIES` | (empty) | Extra proxy IPs/CIDRs allowed to set `CF-Connecting-IP`/`X-Forwarded-For` |
+| `ANISAMA_ORIGIN_SECRET` | (empty) | Require `X-Origin-Secret` (add it with a Cloudflare Transform Rule) |
 | `ANISAMA_CORS_ORIGINS` | prod + localhost | Comma-separated allowed browser origins, or `*` |
 | `ANISAMA_ENABLE_VOIRANIME` | `1` | `0` hides the Voiranime source from `/api/v2/sources` |
 
@@ -134,6 +136,8 @@ Copy `.env.example` to `.env` (loaded automatically via python-dotenv) or set th
 - Opaque `500` responses (`{"error": "internal_error", "request_id": "..."}`); exception details stay in server logs.
 - `Strict-Transport-Security`, CSP on HTML pages, `nosniff`, `X-Frame-Options`, `Referrer-Policy`.
 - CORS restricted to an origin whitelist; `Authorization`/`X-API-Key` allowed for authenticated deployments.
+- Client IPs come from `CF-Connecting-IP`/`X-Forwarded-For` only when the peer is a trusted proxy; logs and rate limits are per client.
+- Optional `X-Origin-Secret` origin lock; firewall the origin to Cloudflare IPs or use a cloudflared tunnel.
 - Sources that cannot serve requests (Playwright missing for MyFluneo/AnimoFlix) are not advertised by `/api/v2/sources`.
 
 ### Rate limits
@@ -147,7 +151,7 @@ Per IP, sliding 60-second window, with independent budgets:
 | Episodes | episodes (cache miss only) | 20/min |
 | Resolve | resolve-episode | 5/min |
 
-Exceeded limits return `429` with `Retry-After`; every response includes `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`. Behind Cloudflare, set `ANISAMA_TRUST_PROXY=1` to limit on `CF-Connecting-IP` instead of the shared edge IP.
+Exceeded limits return `429` with `Retry-After`; every response includes `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`. Behind Cloudflare, keep `ANISAMA_TRUST_PROXY=auto` (default) or list your local proxy in `ANISAMA_TRUSTED_PROXIES`; rate limiting then keys on the real client.
 
 ## Structure
 
