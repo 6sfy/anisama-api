@@ -37,10 +37,11 @@ def handle(handler, _params):
     if years:
         year_range = {"min": min(years), "max": max(years)}
 
+    source_total = sum(src_counts.values()) or 1
     by_source = {
         src: {
             "count": count,
-            "percentage": round(count / len(cat) * 100, 1) if cat else 0,
+            "percentage": round(count * 100 / source_total, 1),
         }
         for src, count in src_counts.most_common()
     }

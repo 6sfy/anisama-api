@@ -100,6 +100,21 @@ class RateLimiter:
             self._maybe_prune(now)
             return allowed, remaining, max(1, reset)
 
+    def peek(self, ip, tier="light"):
+        """Current budget without consuming a request (cache-hit responses)."""
+        now = time.time()
+        limit = self.limits.get(tier, self.limits.get("light", 0))
+        if limit <= 0:
+            return 0, 0, 0
+        with self._lock:
+            buckets = self._hits.get(ip) or {}
+            bucket = buckets.get(tier) or deque()
+            while bucket and now - bucket[0] > self.window:
+                bucket.popleft()
+            remaining = max(0, limit - len(bucket))
+            reset = int(self.window - (now - bucket[0])) + 1 if bucket else self.window
+            return limit, remaining, max(1, reset)
+
     def _maybe_prune(self, now):
         if len(self._hits) < 4096:
             return

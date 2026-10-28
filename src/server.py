@@ -227,11 +227,12 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         return bool(supplied) and hmac.compare_digest(supplied, API_TOKEN)
 
     def _check_access(self, path, tier):
-        allowed, remaining, reset = RATE_LIMITER.check(self._client_ip(), tier)
-        self._rate_limit = (RATE_LIMITS.get(tier, RATE_LIMITS["light"]), remaining, reset)
-        if not allowed:
-            send_json(self, {"error": "rate_limited", "request_id": self.request_id}, 429)
-            return False
+        if tier is not None:
+            allowed, remaining, reset = RATE_LIMITER.check(self._client_ip(), tier)
+            self._rate_limit = (RATE_LIMITS.get(tier, RATE_LIMITS["light"]), remaining, reset)
+            if not allowed:
+                send_json(self, {"error": "rate_limited", "request_id": self.request_id}, 429)
+                return False
         if ORIGIN_SECRET:
             supplied = (self.headers.get("X-Origin-Secret") or "").strip()
             if not supplied or not hmac.compare_digest(supplied, ORIGIN_SECRET):
@@ -327,7 +328,9 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed.path.rstrip("/")
         params = parse_qs(parsed.query)
 
-        if any(path.startswith(p) for p in RESOLVE_PATHS):
+        if path == "/api/v2/episodes":
+            tier = None  # cache hits are free; the route limits cache misses only
+        elif any(path.startswith(p) for p in RESOLVE_PATHS):
             tier = "resolve"
         elif any(path.startswith(p) for p in HEAVY_PATHS):
             tier = "heavy"

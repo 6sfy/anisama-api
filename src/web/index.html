@@ -210,13 +210,14 @@
         <table>
           <thead><tr><th data-i18n="api.rate_class">Class</th><th data-i18n="api.rate_endpoints">Endpoints</th><th data-i18n="api.rate_limit">Limit</th></tr></thead>
           <tbody>
-            <tr><td>Light</td><td>catalog, stats, sources, info, health, episodes (cached)</td><td><code>60/min</code></td></tr>
+            <tr><td>Light</td><td>catalog, stats, sources, info, health</td><td><code>60/min</code></td></tr>
             <tr><td>Heavy</td><td>search, seasons, hosts, resolve</td><td><code>20/min</code></td></tr>
             <tr><td>Episodes</td><td>episodes (cache miss only)</td><td><code>20/min</code></td></tr>
             <tr><td>Resolve</td><td>resolve-episode</td><td><code>5/min</code></td></tr>
           </tbody>
         </table>
       </div>
+      <p data-i18n="api.rate_cache_note">Episode-list cache hits are free; only cache misses count against the Episodes budget.</p>
       <p data-i18n="api.rate_headers">Every response includes <code>RateLimit-Limit</code>, <code>RateLimit-Remaining</code> and <code>RateLimit-Reset</code>. A <code>429</code> also sends <code>Retry-After</code>.</p>
       <div class="code-block"><div class="code-bar"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span><span class="code-title">json</span></div><div class="code-body">
 <span class="c-comment" data-i18n="api.rate_429_comment"># HTTP 429 — too many requests</span>
@@ -428,6 +429,7 @@
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx5"><strong>API hygiene</strong> : episodes cache misses limited to 20/min, HEAD supported for probes, minimal <code>/engine</code>, and <code>/stats</code> + <code>/sources</code> share the same counts.</span></div>
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx6"><strong>Client IP</strong> : <code>CF-Connecting-IP</code> / <code>X-Forwarded-For</code> are trusted only from Cloudflare or configured proxies; logs and rate limits are per client.</span></div>
           <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx7"><strong>Host allowlist</strong> : requests that do not target <code>anisama.sexcaller.lol</code> are closed without a response.</span></div>
+          <div class="cl-item"><span class="cl-tag fx">FIX</span><span class="cl-text" data-i18n="changelog.v201.fx8"><strong>Quotas</strong> : episode-list cache HITs no longer consume quota, and <code>/stats</code> percentages now sum to 100%.</span></div>
           <div class="cl-item"><span class="cl-tag up">UP</span><span class="cl-text" data-i18n="changelog.v201.up1"><strong>Light mode</strong> : warm cream theme with readable code blocks, tables and terminal.</span></div>
         </div>
       </div>

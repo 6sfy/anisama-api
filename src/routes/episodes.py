@@ -42,6 +42,8 @@ def handle(handler, params):
     eps = get_anime_episodes(slug=slug, source=source)
     if eps is not None and len(eps) > 0:
         logger.info("  -> Cache HIT (%d episodes)", len(eps))
+        limit, remaining, reset = EPISODE_LIMITER.peek(client_ip(handler), "episodes")
+        handler._rate_limit = (limit, remaining, reset)
         numbers = [{"number": e.get("number", e.get("id", i+1)),
                     "season": e.get("season", ""),
                     "lang": e.get("lang", "vostfr")} for i, e in enumerate(eps)]

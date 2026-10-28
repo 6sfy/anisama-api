@@ -147,7 +147,7 @@ Per IP, sliding 60-second window, with independent budgets:
 
 | Class | Endpoints | Limit |
 |-------|-----------|-------|
-| Light | catalog, stats, sources, info, health, episodes (cached) | 60/min |
+| Light | catalog, stats, sources, info, health | 60/min |
 | Heavy | search, seasons, hosts, resolve | 20/min |
 | Episodes | episodes (cache miss only) | 20/min |
 | Resolve | resolve-episode | 5/min |

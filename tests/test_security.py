@@ -197,7 +197,8 @@ def test_episodes_cache_hit_does_not_consume_limit(monkeypatch):
     from src.limits import RateLimiter
 
     cached = [{"number": 1, "season": "S1", "lang": "vostfr"}]
-    monkeypatch.setattr(episodes, "EPISODE_LIMITER", RateLimiter({"episodes": 1}, 60))
+    limiter = RateLimiter({"episodes": 1}, 60)
+    monkeypatch.setattr(episodes, "EPISODE_LIMITER", limiter)
     monkeypatch.setattr(episodes, "EPISODE_LIMIT", 1)
     monkeypatch.setattr(episodes, "get_anime_episodes", lambda **k: cached)
 
@@ -205,6 +206,36 @@ def test_episodes_cache_hit_does_not_consume_limit(monkeypatch):
         handler = FakeHandler()
         episodes.handle(handler, {"source": ["anime-sama"], "slug": ["cached"]})
         assert handler.status == 200
+
+    limit, remaining, _reset = limiter.peek("127.0.0.1", "episodes")
+    assert limit == 1
+    assert remaining == 1
+
+
+def test_rate_limiter_peek_does_not_consume():
+    limiter = srv.RateLimiter({"light": 2}, 60)
+    assert limiter.check("1.2.3.4", "light")[1] == 1
+    before = limiter.peek("1.2.3.4", "light")
+    after = limiter.peek("1.2.3.4", "light")
+    assert before == after
+    assert after[1] == 1
+
+
+def test_stats_percentages_sum_to_100(monkeypatch):
+    from src.routes import stats
+
+    catalog = [
+        {"source": "voiranime", "alt_source": ["franime"]},
+        {"source": "franime"},
+    ]
+    monkeypatch.setattr(stats.cache_mod, "load_catalog", lambda: catalog)
+    monkeypatch.setattr(stats, "get_indexed_count", lambda: (len(catalog), 0))
+
+    handler = FakeHandler()
+    stats.handle(handler, {})
+    body = json.loads(handler.wfile.getvalue())
+    total_pct = sum(v["percentage"] for v in body["by_source"].values())
+    assert abs(total_pct - 100.0) < 0.2
 
 
 def test_engine_status_is_minimal():
